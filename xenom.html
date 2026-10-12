@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<title>XENOM — AI Coding Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0c; --s1:#111113; --s2:#17171a; --s3:#1d1d21;
+  --line:#232327; --line2:#303036;
+  --tx:#f4f4f5; --tx2:#a1a1aa; --tx3:#6b6b74;
+  --ok:#3ddc97; --bad:#ff6b6b;
+  --inv-bg:#f4f4f5; --inv-tx:#0b0b0c;
+  --hl-tag:#f4f4f5; --hl-attr:#a1a1aa; --hl-str:#d4d4d8; --hl-kw:#f4f4f5; --hl-com:#6b6b74; --hl-num:#d4d4d8;
+  --r:12px; --rs:8px;
+  --f-ui:'Space Grotesk',system-ui,sans-serif; --f-mono:'JetBrains Mono',ui-monospace,monospace;
+  --nav-h:62px; --head-h:56px;
+}
+[data-theme="light"]{
+  --bg:#fafafa; --s1:#ffffff; --s2:#f4f4f4; --s3:#ebebeb;
+  --line:#e4e4e4; --line2:#d4d4d4;
+  --tx:#111113; --tx2:#52525b; --tx3:#8b8b94;
+  --ok:#0f9d63; --bad:#d92d20;
+  --inv-bg:#111113; --inv-tx:#fafafa;
+  --hl-tag:#111113; --hl-attr:#52525b; --hl-str:#3f3f46; --hl-kw:#111113; --hl-com:#a1a1aa; --hl-num:#3f3f46;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--tx);font-family:var(--f-ui);font-size:15px;line-height:1.5;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+::selection{background:var(--tx);color:var(--bg)}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:inherit}
+input,textarea,select{font-family:inherit;color:var(--tx);background:var(--s2);border:1px solid var(--line);border-radius:var(--rs);padding:10px 12px;font-size:14px;width:100%;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--tx2)}
+input[type=checkbox]{width:auto}
+textarea{resize:none}
+svg{display:block;flex:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+.mlabel{font-family:var(--f-mono);font-size:11px;letter-spacing:.02em;color:var(--tx3);font-weight:500}
+.iconbtn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:var(--rs);color:var(--tx2);transition:.15s;flex:none}
+.iconbtn:hover,.iconbtn:active{background:var(--s2);color:var(--tx)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:var(--rs);font-weight:600;font-size:14px;border:1px solid var(--line2);transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--tx2)}
+.btn-p{background:var(--inv-bg);color:var(--inv-tx);border-color:var(--inv-bg)}
+.btn-p:hover{opacity:.86;border-color:var(--inv-bg)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:99px;color:var(--tx2)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hint{font-size:12px;color:var(--tx3);margin-top:6px;line-height:1.5}
+:focus-visible{outline:2px solid var(--tx2);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+.screen{display:none;height:100vh;height:100dvh;flex-direction:column}
+.screen.on{display:flex}
+.dash-head{height:var(--head-h);flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--line)}
+.wordmark{font-weight:700;font-size:19px;letter-spacing:.06em;display:flex;align-items:center}
+.wordmark i{display:inline-block;width:9px;height:19px;background:var(--tx);animation:blink 1.1s step-end infinite;margin-left:4px}
+.dash-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.hero{padding:40px 20px 28px;border-bottom:1px solid var(--line);background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:22px 22px}
+.hero h1{font-size:clamp(30px,8vw,54px);font-weight:700;letter-spacing:-.025em;line-height:1.04;max-width:640px}
+.hero h1 em{font-style:normal;color:var(--tx3)}
+.hero p{color:var(--tx2);margin-top:12px;max-width:520px;font-size:14.5px}
+.hero-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.sysline{margin-top:24px;font-family:var(--f-mono);font-size:11.5px;color:var(--tx3);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sysline span{display:inline-flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--tx3);flex:none}
+.dot.on{background:var(--ok)}
+.onboard{margin:20px 20px 0;border:1px solid var(--line2);border-radius:var(--r);padding:16px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--s1)}
+.onboard b{display:block;font-size:15px}
+.onboard span{color:var(--tx2);font-size:13px}
+.dash-search{padding:18px 20px 0}
+.searchbox{position:relative}
+.searchbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tx3)}
+.searchbox input{padding-left:40px;background:var(--s1)}
+.proj-grid{padding:18px 20px 40px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.pcard{border:1px solid var(--line);border-radius:var(--r);padding:16px;background:var(--s1);cursor:pointer;transition:border-color .15s,transform .15s}
+.pcard:hover{border-color:var(--tx2)}
+.pcard:active{transform:scale(.985)}
+.pcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pcard-name{font-weight:600;font-size:16px}
+.pcard-desc{color:var(--tx2);font-size:13px;margin:4px 0 14px;min-height:20px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcard-meta{display:flex;gap:12px;font-family:var(--f-mono);font-size:11px;color:var(--tx3);flex-wrap:wrap}
+.empty{padding:50px 24px;text-align:center}
+.empty .glyph{width:64px;height:64px;border:1px solid var(--line2);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--tx2)}
+.empty h3{font-size:18px;margin-bottom:6px}
+.empty p{color:var(--tx2);font-size:13.5px;max-width:340px;margin:0 auto 20px}
+
+.work-head{height:var(--head-h);flex:none;display:flex;align-items:center;gap:6px;padding:0 10px;border-bottom:1px solid var(--line);background:var(--bg);z-index:5}
+.work-title{flex:1;min-width:0;display:flex;align-items:center;gap:8px;overflow:hidden}
+.work-title span.t{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-chip{max-width:170px}
+.model-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.work-shell{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.work-main{flex:1;display:flex;overflow:hidden;position:relative;min-height:0}
+#panel-chat,#panel-preview,#panel-files{display:none;min-width:0;min-height:0;overflow:hidden;flex-direction:column;flex:1}
+.wk[data-tab="chat"] #panel-chat{display:flex}
+.wk[data-tab="preview"] #panel-preview{display:flex}
+.wk[data-tab="files"] #panel-files{display:flex}
+.bottom-nav{flex:none;height:var(--nav-h);display:flex;border-top:1px solid var(--line);background:var(--bg);padding-bottom:env(safe-area-inset-bottom);box-sizing:content-box}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx3);font-size:11.5px;font-weight:500;transition:color .15s;position:relative}
+.bottom-nav button.on{color:var(--tx)}
+.bottom-nav button.on::before{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:28px;height:2px;background:var(--tx)}
+
+.chat-scroll{flex:1;overflow-y:auto;padding:18px 16px 8px;-webkit-overflow-scrolling:touch;min-height:0}
+.msg{margin-bottom:18px;max-width:100%}
+.msg-user{margin-left:auto;max-width:88%;border:1px solid var(--line2);border-radius:var(--r) var(--r) 4px var(--r);padding:11px 14px;background:var(--s1)}
+.msg-agent .who{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.msg-agent .who b{font-size:12.5px;letter-spacing:.08em}
+.msg-body{font-size:14.5px;word-wrap:break-word;overflow-wrap:anywhere}
+.msg-user .msg-body{white-space:pre-wrap}
+.msg-body p{margin:.4em 0}
+.msg-body h3{font-size:1.05em;margin:.7em 0 .3em}
+.msg-body ul,.msg-body ol{margin:.4em 0 .4em 1.3em}
+.msg-body li{margin:.2em 0}
+.msg-body code{font-family:var(--f-mono);font-size:12.5px;background:var(--s2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.msg-body a{text-decoration:underline}
+.cb{border:1px solid var(--line);border-radius:var(--rs);margin:.6em 0;overflow:hidden;background:var(--s1)}
+.cb-head{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);background:var(--s2)}
+.cb pre{padding:12px;overflow-x:auto;font-family:var(--f-mono);font-size:12.5px;line-height:1.6}
+.cb-copy{color:var(--tx3);display:flex;gap:5px;align-items:center;font-family:var(--f-mono);font-size:11px}
+.cb-copy:hover{color:var(--tx)}
+.attach-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.attach-grid img{width:120px;height:120px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--line2)}
+.toolcard{border:1px solid var(--line);border-radius:var(--rs);margin:8px 0;background:var(--s1);overflow:hidden}
+.toolcard-head{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer}
+.toolcard-head .mlabel{color:var(--tx);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tool-out{display:none;padding:0 12px 10px;font-family:var(--f-mono);font-size:11.5px;color:var(--tx2);white-space:pre-wrap;word-break:break-word;max-height:220px;overflow-y:auto}
+.toolcard.open .tool-out{display:block}
+.tool-sq{width:9px;height:9px;border-radius:2px;background:var(--tx3);flex:none}
+.tool-sq.run{background:var(--tx);animation:pulse .8s ease-in-out infinite}
+.tool-sq.ok{background:var(--ok)}
+.tool-sq.err{background:var(--bad)}
+.typing{display:inline-flex;gap:4px;padding:6px 0}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--tx2);animation:pulse 1s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+.think{font-family:var(--f-mono);font-size:12px;color:var(--tx3);padding:6px 0;animation:pulse 1.4s ease-in-out infinite}
+.chat-empty{padding:40px 10px;text-align:center}
+.chat-empty h3{font-size:20px;margin:14px 0 6px}
+.chat-empty p{color:var(--tx2);font-size:13.5px;max-width:380px;margin:0 auto 16px}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.sugg button{border:1px solid var(--line2);border-radius:99px;padding:9px 14px;font-size:13px;color:var(--tx2);transition:.15s}
+.sugg button:hover{color:var(--tx);border-color:var(--tx2)}
+.composer{flex:none;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg)}
+.attach-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 4px 8px}
+.attach-strip:empty{display:none}
+.att{position:relative;flex:none;width:56px}
+.att img{width:56px;height:56px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--line2)}
+.att .rm{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--inv-bg);color:var(--inv-tx);display:flex;align-items:center;justify-content:center}
+.att .fname{display:block;font-family:var(--f-mono);font-size:10px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.composer-row{display:flex;align-items:flex-end;gap:6px;border:1px solid var(--line2);border-radius:14px;background:var(--s1);padding:6px}
+.composer-row:focus-within{border-color:var(--tx2)}
+.composer-row textarea{flex:1;border:none;background:transparent;padding:8px 4px;max-height:140px;font-size:14.5px;line-height:1.45}
+.sendbtn{width:38px;height:38px;border-radius:10px;background:var(--inv-bg);color:var(--inv-tx);display:flex;align-items:center;justify-content:center;flex:none;transition:.15s}
+.step-ind{font-family:var(--f-mono);font-size:11px;color:var(--tx2);padding:0 6px 8px;display:flex;align-items:center;gap:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+.pv-bar{flex:none;display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:nowrap;overflow-x:auto}
+.seg{display:flex;border:1px solid var(--line2);border-radius:var(--rs);overflow:hidden;flex:none}
+.seg button{padding:7px 12px;font-size:12.5px;font-weight:500;color:var(--tx3);display:flex;align-items:center;gap:6px}
+.seg button.on{background:var(--inv-bg);color:var(--inv-tx)}
+.pv-bar select{width:auto;max-width:150px;padding:6px 8px;font-size:12.5px;font-family:var(--f-mono)}
+.pv-stage{flex:1;overflow:auto;background:var(--s2);display:flex;justify-content:center;align-items:stretch;position:relative;min-height:0}
+.pv-stage.mobile{padding:16px}
+.pv-frame-wrap{width:100%;height:100%;position:relative;background:var(--bg)}
+.pv-stage.mobile .pv-frame-wrap{width:390px;max-width:100%;border:1px solid var(--line2);border-radius:18px;overflow:hidden}
+.pv-frame-wrap iframe{width:100%;height:100%;border:none;background:#fff}
+.pv-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;background:var(--bg)}
+.pv-errs{flex:none;border-top:1px solid var(--line);max-height:40%;overflow-y:auto;display:none;background:var(--bg)}
+.pv-errs.on{display:block}
+.pv-err{padding:10px 14px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--tx2);display:flex;gap:10px;align-items:flex-start}
+.pv-err b{color:var(--bad);flex:none}
+
+.ftree-holder{display:flex;flex-direction:column;min-height:0;flex:1;min-width:0}
+.file-tree{overflow-y:auto;padding:10px 8px;-webkit-overflow-scrolling:touch;min-height:0;flex:1}
+.frow{display:flex;align-items:center;gap:8px;padding:5px 4px 5px 8px;border-radius:var(--rs);cursor:pointer;user-select:none;-webkit-user-select:none;transition:background .12s}
+.frow:hover,.frow.sel{background:var(--s2)}
+.frow .fchev{width:14px;color:var(--tx3);transition:transform .15s;flex:none;display:flex}
+.frow.closed .fchev{transform:rotate(-90deg)}
+.frow .fname{flex:1;min-width:0;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow .fdot{width:6px;height:6px;border-radius:50%;background:var(--ok);flex:none}
+.frow .more{width:30px;height:30px}
+.fbadge{width:24px;height:24px;border:1px solid var(--line2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:9px;font-weight:700;color:var(--tx2);flex:none}
+.fbadge.dir{border:none}
+.files-foot{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px}
+.files-foot .btn{flex:1;padding:10px}
+.editor{position:absolute;inset:0;background:var(--bg);z-index:6;display:none;flex-direction:column}
+.editor.on{display:flex}
+.ed-head{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.ed-path{flex:1;font-family:var(--f-mono);font-size:12.5px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ed-save{position:relative;padding:8px 16px}
+.ed-save .dirty{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--ok);display:none}
+.ed-save.dirty .dirty{display:block}
+.code-area{flex:1;position:relative;overflow:hidden;display:flex;min-height:0}
+.gutter{flex:none;width:46px;padding:12px 8px 12px 0;text-align:right;font-family:var(--f-mono);font-size:12.5px;line-height:1.6;color:var(--tx3);background:var(--s1);border-right:1px solid var(--line);overflow:hidden;user-select:none;white-space:pre}
+.code-scroll{flex:1;position:relative;overflow:hidden}
+.code-hl,.code-in{position:absolute;inset:0;padding:12px 14px;font-family:var(--f-mono);font-size:12.5px;line-height:1.6;white-space:pre;margin:0;tab-size:2;letter-spacing:0;word-spacing:0}
+.code-hl{pointer-events:none;color:var(--tx);overflow:hidden}
+.code-in{background:transparent;color:transparent;caret-color:var(--tx);border:none;border-radius:0;overflow:auto;width:100%}
+.code-in::selection{background:var(--tx3);color:var(--tx)}
+.t-kw{color:var(--hl-kw);font-weight:600}.t-str{color:var(--hl-str)}.t-com{color:var(--hl-com);font-style:italic}
+.t-num{color:var(--hl-num)}.t-tag{color:var(--hl-tag);font-weight:600}.t-attr{color:var(--hl-attr)}
+.ed-empty{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--tx3);font-size:13px}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--bg);border-left:1px solid var(--line);z-index:41;transform:translateX(100%);transition:transform .25s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;visibility:hidden}
+.drawer.on{transform:none;visibility:visible}
+@media(max-width:640px){.drawer{top:auto;width:100%;height:90vh;height:90dvh;border-left:none;border-top:1px solid var(--line);border-radius:16px 16px 0 0;transform:translateY(100%)}}
+.dr-head{flex:none;display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dr-head h3{flex:1;font-size:16px}
+.dr-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;min-height:0}
+.dr-body.termbody{padding:0;display:flex;flex-direction:column;overflow:hidden}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line2);border-radius:16px 16px 0 0;z-index:42;transform:translateY(100%);transition:transform .25s cubic-bezier(.3,.8,.3,1);padding-bottom:env(safe-area-inset-bottom);max-height:82vh;max-height:82dvh;display:flex;flex-direction:column;visibility:hidden;max-width:560px;margin:0 auto}
+.sheet.on{transform:none;visibility:visible}
+.sheet-head{padding:14px 18px 6px;display:flex;align-items:center;justify-content:space-between}
+.sheet-head h3{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-items{padding:4px 10px 14px;overflow-y:auto}
+.sitem{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border-radius:var(--rs);font-size:14.5px;text-align:left;transition:background .12s}
+.sitem:hover{background:var(--s2)}
+.sitem.danger{color:var(--bad)}
+.sitem svg{color:var(--tx2)}
+.sitem.danger svg{color:var(--bad)}
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.5)}
+.modal.on{display:flex}
+.modal .mbox{background:var(--bg);border:1px solid var(--line2);border-radius:16px;width:100%;max-width:460px;max-height:86vh;max-height:86dvh;display:flex;flex-direction:column;animation:fadeUp .2s}
+.mhead{padding:18px 20px 6px}
+.mhead h3{font-size:17px}
+.mbody{padding:8px 20px;overflow-y:auto;font-size:14px;color:var(--tx2)}
+.mbody b{color:var(--tx)}
+.mfoot{padding:14px 20px 18px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.mfoot .btn{padding:9px 16px}
+.field{margin-bottom:14px}
+.field label.mlabel{display:block;margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-sec{border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.form-sec>.sec-t{display:block;margin-bottom:12px;font-weight:600;font-size:14.5px}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.pw-wrap .iconbtn{position:absolute;right:3px;top:50%;transform:translateY(-50%)}
+.togglerow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);gap:10px}
+.togglerow:last-child{border-bottom:none}
+.togg{width:44px;height:24px;border-radius:99px;border:1px solid var(--line2);position:relative;transition:.2s;flex:none}
+.togg::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--tx3);transition:.2s}
+.togg.on{background:var(--inv-bg);border-color:var(--inv-bg)}
+.togg.on::after{left:23px;background:var(--inv-tx)}
+.statusline{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--tx2);padding:8px 0;flex-wrap:wrap;word-break:break-word}
+.term{flex:1;overflow-y:auto;padding:14px;font-family:var(--f-mono);font-size:12.5px;line-height:1.7;-webkit-overflow-scrolling:touch;min-height:0}
+.tline{white-space:pre-wrap;word-break:break-word}
+.tline.cmd{color:var(--tx);font-weight:500}
+.tline.err{color:var(--bad)}
+.tline.dim{color:var(--tx3)}
+.term-in{flex:none;display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);font-family:var(--f-mono);font-size:12.5px}
+.term-in .ps{color:var(--tx3);flex:none}
+.term-in input{border:none;background:transparent;padding:4px 0;font-family:var(--f-mono);font-size:12.5px}
+.deplog{font-family:var(--f-mono);font-size:11.5px;background:var(--s1);border:1px solid var(--line);border-radius:var(--rs);padding:12px;max-height:240px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;line-height:1.7}
+.urlbox{display:flex;align-items:center;gap:10px;border:1px solid var(--line2);border-radius:var(--rs);padding:11px 12px;font-family:var(--f-mono);font-size:12px;margin-bottom:14px;word-break:break-all}
+.model-row{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.model-row .mid{flex:1;min-width:0}
+.model-row .mid input{border:none;background:transparent;padding:4px 2px;font-family:var(--f-mono);font-size:13px}
+.model-row .chip{padding:2px 8px;font-size:10.5px}
+.deploy-states{display:flex;gap:6px;margin-bottom:14px}
+.dstate{flex:1;text-align:center;padding:9px 4px;border:1px solid var(--line);border-radius:var(--rs);font-family:var(--f-mono);font-size:11px;color:var(--tx3)}
+.dstate.cur{background:var(--inv-bg);color:var(--inv-tx);border-color:var(--inv-bg)}
+pre.codegen{font-family:var(--f-mono);font-size:11px;background:var(--s1);border:1px solid var(--line);border-radius:var(--rs);padding:12px;overflow:auto;max-height:300px;white-space:pre;line-height:1.6;color:var(--tx)}
+.rail{display:none}
+@media(min-width:1024px){
+  .bottom-nav{display:none}
+  .work-shell{flex-direction:row}
+  .rail{display:flex;flex-direction:column;width:58px;border-right:1px solid var(--line);padding:12px 0;gap:4px;align-items:center;flex:none}
+  .rail button{width:42px;height:42px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;color:var(--tx3);position:relative;transition:.15s}
+  .rail button:hover{color:var(--tx);background:var(--s2)}
+  .rail button.on{color:var(--tx)}
+  .rail button.on::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:2px;height:22px;background:var(--tx)}
+  .rail .spacer{flex:1}
+  .wk[data-tab="files"] #panel-files{display:grid;grid-template-columns:280px 1fr}
+  #panel-files .file-tree{border-right:0}
+  #panel-files .ftree-holder{border-right:1px solid var(--line)}
+  #panel-files .editor{position:relative;inset:auto;display:flex}
+  #panel-files .editor:not(.on) .ed-head,#panel-files .editor:not(.on) .code-area{display:none}
+  #panel-files .editor:not(.on) .ed-empty{display:flex}
+}
+@media(min-width:1200px){
+  .wk[data-tab="chat"] #panel-chat{flex:0 0 46%;max-width:640px;border-right:1px solid var(--line)}
+  .wk[data-tab="chat"] #panel-preview{display:flex}
+}
+@media(max-width:640px){
+  input,textarea,select{font-size:16px}
+  .code-hl,.code-in{font-size:13px}
+  .gutter{font-size:13px}
+}
+.toasts{position:fixed;bottom:calc(var(--nav-h) + 18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;width:max-content;max-width:92vw;pointer-events:none}
+@media(min-width:1024px){.toasts{bottom:20px}}
+.toast{background:var(--inv-bg);color:var(--inv-tx);padding:11px 16px;border-radius:var(--rs);font-size:13.5px;font-weight:500;animation:fadeUp .2s;max-width:100%;display:flex;gap:8px;align-items:center}
+</style>
+</head>
+<body>
+
+<script>
+/* Error trap — shows any script error on screen instead of failing silently */
+(function(){
+  function show(m){
+    var b=document.getElementById('xenom-boot-error');
+    if(!b){
+      b=document.createElement('div');b.id='xenom-boot-error';b.setAttribute('role','alert');
+      b.style.cssText='position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;background:#000;color:#fff;border:1px solid #555;border-radius:10px;padding:10px 12px;font:11px/1.5 ui-monospace,monospace;max-height:40vh;overflow:auto;white-space:pre-wrap';
+      b.onclick=function(){b.remove()};
+      document.body.appendChild(b);
+    }
+    b.textContent+=m+'\n';
+  }
+  window.addEventListener('error',function(e){
+    if(e&&e.target&&e.target!==window)return;
+    show('[XENOM ERROR] '+((e&&e.message)||'Script error')+(e&&e.lineno?' (line '+e.lineno+')':'')+'  — tap to dismiss');
+  });
+  window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason;show('[XENOM ERROR] Promise rejection: '+((r&&r.message)||r))});
+})();
+</script>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="screen on" id="screen-dash">
+  <div class="dash-head">
+    <div class="wordmark">XENOM<i></i></div>
+    <div style="display:flex;gap:2px">
+      <button class="iconbtn" id="dashThemeBtn" aria-label="Toggle theme"></button>
+      <button class="iconbtn" id="dashSettingsBtn" aria-label="Settings"></button>
+    </div>
+  </div>
+  <div class="dash-body">
+    <div class="hero">
+      <h1>Describe it.<br>Xenom <em>builds it.</em></h1>
+      <p>Xenom plans, writes files into your project, loads the live preview, reads the errors and fixes them — with GLM or Gemini.</p>
+      <div class="hero-actions">
+        <button class="btn btn-p" id="newProjectBtn"></button>
+        <button class="btn" id="importBtn"></button>
+        <button class="btn" id="heroSettingsBtn">Add API keys</button>
+      </div>
+      <div class="sysline" id="sysline"></div>
+    </div>
+    <div class="onboard" id="onboard" style="display:none"></div>
+    <div class="dash-search">
+      <div class="searchbox"><span id="searchIcon"></span><input id="projSearch" placeholder="Search projects" aria-label="Search projects"></div>
+    </div>
+    <div class="proj-grid" id="projGrid"></div>
+  </div>
+</div>
+
+<!-- ============ WORKSPACE ============ -->
+<div class="screen" id="screen-work">
+  <div class="work-head">
+    <button class="iconbtn" id="backBtn" aria-label="Back to dashboard"></button>
+    <div class="work-title"><span class="t" id="workTitle">Project</span><span class="dot" id="workStatus"></span></div>
+    <button class="chip model-chip" id="modelChip" aria-label="Choose model"><span id="modelName">model</span></button>
+    <button class="iconbtn" id="workMenuBtn" aria-label="Project menu"></button>
+  </div>
+  <div class="work-shell">
+    <div class="rail" id="rail"></div>
+    <div class="work-main wk" id="workMain" data-tab="chat">
+      <div id="panel-chat">
+        <div class="chat-scroll" id="chatScroll"></div>
+        <div class="composer">
+          <div class="step-ind" id="stepInd" style="display:none"></div>
+          <div class="attach-strip" id="attachStrip"></div>
+          <div class="composer-row">
+            <button class="iconbtn" id="attachBtn" aria-label="Attach image or text file"></button>
+            <textarea id="chatInput" rows="1" placeholder="Message Xenom" enterkeyhint="send" aria-label="Message"></textarea>
+            <button class="sendbtn" id="sendBtn" aria-label="Send"></button>
+          </div>
+        </div>
+      </div>
+      <div id="panel-preview">
+        <div class="pv-bar">
+          <button class="iconbtn" id="pvRefresh" aria-label="Refresh preview"></button>
+          <div class="seg"><button id="pvMobile" class="on"></button><button id="pvDesktop"></button></div>
+          <select id="pvPageSel" aria-label="Preview page" style="display:none"></select>
+          <button class="iconbtn" id="pvNewTab" aria-label="Open preview in new tab"></button>
+          <div style="flex:1"></div>
+          <span class="mlabel" id="pvCount"></span>
+        </div>
+        <div class="pv-stage mobile" id="pvStage">
+          <div class="pv-frame-wrap">
+            <iframe id="pvFrame" title="Project preview" sandbox="allow-scripts allow-forms allow-modals allow-popups"></iframe>
+            <div class="pv-msg" id="pvMsg" style="display:none"></div>
+          </div>
+        </div>
+        <div class="pv-errs" id="pvErrs"></div>
+      </div>
+      <div id="panel-files">
+        <div class="ftree-holder">
+          <div class="file-tree" id="fileTree"></div>
+          <div class="files-foot">
+            <button class="btn" id="newFileBtn">New file</button>
+            <button class="btn" id="newFolderBtn">New folder</button>
+          </div>
+        </div>
+        <div class="editor" id="editor">
+          <div class="ed-head">
+            <button class="iconbtn" id="edBack" aria-label="Close editor"></button>
+            <span class="ed-path" id="edPath"></span>
+            <button class="btn ed-save" id="edSave">Save<span class="dirty"></span></button>
+          </div>
+          <div class="code-area">
+            <div class="gutter" id="edGutter">1</div>
+            <div class="code-scroll">
+              <pre class="code-hl" id="edHl" aria-hidden="true"></pre>
+              <textarea class="code-in" id="edInput" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code editor"></textarea>
+            </div>
+          </div>
+          <div class="ed-empty"><span id="edEmptyIcon"></span><p>Select a file to edit</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav" id="bottomNav"></div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="sheet" id="sheet"><div class="sheet-head"><h3 id="sheetTitle"></h3><button class="iconbtn" id="sheetClose" aria-label="Close"></button></div><div class="sheet-items" id="sheetItems"></div></div>
+<div class="drawer" id="drawer"><div class="dr-head"><h3 id="drawerTitle"></h3><button class="iconbtn" id="drawerClose" aria-label="Close"></button></div><div class="dr-body" id="drawerBody"></div></div>
+<div class="modal" id="modal"><div class="mbox"><div class="mhead"><h3 id="modalTitle"></h3></div><div class="mbody" id="modalBody"></div><div class="mfoot" id="modalFoot"></div></div></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="fileInput" accept="image/*,.txt,.md,.json,.css,.js,.html,.csv" multiple hidden>
+<input type="file" id="importInput" accept=".json,application/json" hidden>
+
+<script>
+'use strict';
+/* =====================================================================
+   XENOM — core helpers
+   ===================================================================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmtBytes=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB';
+const fmtTime=t=>{const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})};
+const slug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'project';
+const norm=p=>String(p||'').trim().replace(/\\/g,'/').replace(/^(\.?\/)+/,'').replace(/\/{2,}/g,'/').replace(/\/+$/,'');
+const lineCount=t=>String(t).split('\n').length;
+
+const P={
+plus:'<path d="M12 5v14M5 12h14"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+chat:'<path d="M4 5h16v11H8.5L4 20z"/>',
+monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M4.5 12.5L12 16.7l7.5-4.2"/>',
+terminal:'<path d="M4 17l6-5-6-5M12 19h8"/>',
+sliders:'<path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/>',
+upload:'<path d="M12 16V4M7 8l5-4 5 4"/><path d="M4 20h16"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',
+check:'<path d="M4 12l5 5L20 7"/>',
+chevD:'<path d="M6 9l6 6 6-6"/>',
+trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+pencil:'<path d="M4 20l1.2-4.2L16 5l3 3L8.2 18.8 4 20z"/>',
+copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
+send:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+stop:'<rect x="6.5" y="6.5" width="11" height="11" rx="1.5" fill="currentColor" stroke="none"/>',
+image:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5-9 9"/>',
+refresh:'<path d="M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5"/>',
+phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+moon:'<path d="M21 13.5A8.5 8.5 0 1 1 10.5 3 7 7 0 0 0 21 13.5z"/>',
+dots:'<circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/>',
+back:'<path d="M15 6l-6 6 6 6"/>',
+alert:'<path d="M12 3L2 21h20L12 3z"/><path d="M12 10v5M12 18v.5"/>',
+db:'<ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v14c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>',
+server:'<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.5M7 16.5h.5"/>',
+ext:'<path d="M14 4h6v6M20 4L11 13"/><path d="M18 13v6H5V6h6"/>',
+clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+code:'<path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/>',
+eye:'<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>',
+eyeOff:'<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><path d="M4 4l16 16"/>',
+download:'<path d="M12 4v12M7 11l5 5 5-5M4 20h16"/>',
+file:'<path d="M13 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9z"/><path d="M13 3v6h6"/>',
+key:'<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/>'
+};
+const I=(n,s)=>'<svg viewBox="0 0 24 24" width="'+(s||18)+'" height="'+(s||18)+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(P[n]||'')+'</svg>';
+
+/* ---------- storage ---------- */
+const LS={
+  get(k,d){try{const v=localStorage.getItem('xenom:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('xenom:'+k,JSON.stringify(v));return true}catch(e){toast('Browser storage is full — delete old projects or export them first');return false}},
+  del(k){try{localStorage.removeItem('xenom:'+k)}catch(e){}}
+};
+
+/* ---------- preferences (providers + models) ---------- */
+function defPrefs(){return{
+  theme:'dark',
+  providers:{
+    glm:{endpoint:'https://open.bigmodel.cn/api/paas/v4/chat/completions',key:''},
+    gemini:{endpoint:'https://generativelanguage.googleapis.com/v1beta',key:''}
+  },
+  models:[
+    {k:'m1',provider:'glm',id:'glm-5.3',vision:false},
+    {k:'m2',provider:'glm',id:'glm-4.5v',vision:true},
+    {k:'m3',provider:'gemini',id:'gemini-2.5-pro',vision:true},
+    {k:'m4',provider:'gemini',id:'gemini-2.5-flash',vision:true}
+  ],
+  current:'m1',temperature:0.4,maxSteps:10,maxTokens:16384,
+  viaBackend:false,backendUrl:'',
+  terminal:{localSandbox:true},
+  deployDefaults:{host:'',port:'21',username:'',password:'',secure:false,remoteRoot:'/public_html',domain:''}
+}}
+function loadPrefs(){
+  const D=defPrefs(),s=LS.get('prefs',null);
+  if(!s||typeof s!=='object')return D;
+  if(s.api&&!s.providers){ /* migrate from the first XENOM build */
+    D.theme=s.theme||D.theme;
+    D.providers.glm.endpoint=s.api.endpoint||D.providers.glm.endpoint;
+    D.providers.glm.key=s.api.key||'';
+    if(typeof s.api.temperature==='number')D.temperature=s.api.temperature;
+    D.maxSteps=s.api.maxSteps||D.maxSteps;
+    D.backendUrl=s.backendUrl||'';
+    if(s.terminal)D.terminal=Object.assign(D.terminal,s.terminal);
+    if(s.deployDefaults)D.deployDefaults=Object.assign(D.deployDefaults,s.deployDefaults);
+    return D;
+  }
+  const o=Object.assign(defPrefs(),s);
+  o.providers={glm:Object.assign(D.providers.glm,s.providers&&s.providers.glm),gemini:Object.assign(D.providers.gemini,s.providers&&s.providers.gemini)};
+  o.deployDefaults=Object.assign(D.deployDefaults,s.deployDefaults);
+  o.terminal=Object.assign(D.terminal,s.terminal);
+  if(!Array.isArray(o.models)||!o.models.length)o.models=D.models;
+  o.models.forEach(m=>{if(!m.k)m.k=uid();if(!m.provider)m.provider='glm'});
+  if(!o.models.some(m=>m.k===o.current))o.current=o.models[0].k;
+  return o;
+}
+let prefs=loadPrefs();
+let projects=LS.get('projects',[]);
+if(!Array.isArray(projects))projects=[];
+const savePrefs=()=>LS.set('prefs',prefs);
+const saveProjects=()=>LS.set('projects',projects);
+const curModel=()=>prefs.models.find(m=>m.k===prefs.current)||prefs.models[0];
+const provOf=m=>prefs.providers[m.provider]||prefs.providers.glm;
+const providerLabel=p=>p==='gemini'?'Gemini':'GLM';
+const hasKey=()=>{const m=curModel();return !!(m&&provOf(m).key)};
+const anyKey=()=>!!(prefs.providers.glm.key||prefs.providers.gemini.key);
+
+const pFiles=id=>{const f=LS.get('files_'+id,{});Object.keys(f).forEach(k=>{if(!f[k]||typeof f[k].c!=='string')f[k]={c:String(f[k]&&f[k].c||''),u:Date.now()}});return f};
+const pChat=id=>LS.get('chat_'+id,[]);
+const saveFiles=(id,f)=>LS.set('files_'+id,f);
+function saveChat(id,c){
+  /* images are not persisted (they would fill the 5 MB storage quota) */
+  const slim=c.slice(-80).map(m=>{
+    const x=Object.assign({},m);
+    if(x.attachments)x.attachments=x.attachments.map(a=>({name:a.name,img:!!(a.dataUrl||a.img)}));
+    if(x.tools)x.tools=x.tools.map(t=>Object.assign({},t,{output:String(t.output||'').slice(0,4000)}));
+    return x;
+  });
+  return LS.set('chat_'+id,slim);
+}
+
+/* ---------- state ---------- */
+let cur=null,files={},chat=[],tab='chat',attachments=[];
+let agentBusy=false,agentAbort=null,runId=0;
+let editingPath=null,edDirty=false,previewErrors=[],expanded=new Set(),knownDirs=new Set(),pvPage='index.html';
+let deploying=false;
+
+/* ---------- UI primitives ---------- */
+function toast(msg,ms){
+  const t=document.createElement('div');t.className='toast';
+  t.innerHTML=I('alert',15)+'<span>'+esc(msg)+'</span>';
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},ms||2800);
+}
+function openSheet(title,items){
+  $('#sheetTitle').textContent=title;
+  const box=$('#sheetItems');box.innerHTML='';
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.className='sitem'+(it.danger?' danger':'');
+    b.innerHTML=I(it.icon||'code')+'<span>'+esc(it.label)+'</span>';
+    b.onclick=()=>{closeSheet();setTimeout(it.action,130)};
+    box.appendChild(b);
+  });
+  $('#overlay').classList.add('on');$('#sheet').classList.add('on');
+}
+function closeSheet(){$('#sheet').classList.remove('on');if(!$('#drawer').classList.contains('on'))$('#overlay').classList.remove('on')}
+function openDrawer(title){$('#drawerTitle').textContent=title;$('#drawerBody').classList.remove('termbody');$('#overlay').classList.add('on');$('#drawer').classList.add('on')}
+function closeDrawer(){$('#drawer').classList.remove('on');if(!$('#sheet').classList.contains('on'))$('#overlay').classList.remove('on')}
+function modal(title,bodyHTML,buttons){
+  $('#modalTitle').textContent=title;$('#modalBody').innerHTML=bodyHTML;
+  const f=$('#modalFoot');f.innerHTML='';
+  let primaryEl=null;
+  buttons.forEach(b=>{
+    const el=document.createElement('button');
+    el.className='btn '+(b.primary?'btn-p':'');
+    el.innerHTML=b.label;
+    el.onclick=()=>{if(b.action&&b.action()===false)return;closeModal()};
+    if(b.primary)primaryEl=el;
+    f.appendChild(el);
+  });
+  $('#modalBody').onkeydown=e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&primaryEl){e.preventDefault();primaryEl.click()}};
+  $('#modal').classList.add('on');
+}
+function closeModal(){$('#modal').classList.remove('on')}
+function confirmDlg(title,text,okLabel,cb){
+  modal(title,'<p>'+esc(text)+'</p>',[{label:'Cancel'},{label:esc(okLabel),primary:true,action:()=>{cb()}}]);
+}
+$('#overlay').onclick=()=>{closeSheet();closeDrawer()};
+$('#sheetClose').onclick=closeSheet;
+$('#drawerClose').onclick=closeDrawer;
+$('#modal').addEventListener('mousedown',e=>{if(e.target===$('#modal'))closeModal()});
+
+function applyTheme(){
+  document.documentElement.dataset.theme=prefs.theme;
+  $('#dashThemeBtn').innerHTML=I(prefs.theme==='dark'?'sun':'moon');
+  document.querySelector('meta[name=theme-color]').content=prefs.theme==='dark'?'#0b0b0c':'#fafafa';
+}
+function toggleTheme(){prefs.theme=prefs.theme==='dark'?'light':'dark';savePrefs();applyTheme()}
+$('#dashThemeBtn').onclick=toggleTheme;
+
+function copyText(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(t);
+  return new Promise((res,rej)=>{
+    try{const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();res()}catch(e){rej(e)}
+  });
+}
+function dl(blob,name){
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+
+/* ---------- syntax highlighting (single-pass tokenizer) ---------- */
+function tokenize(code,re,fn){
+  let out='',last=0,m;re.lastIndex=0;
+  while((m=re.exec(code))){
+    out+=esc(code.slice(last,m.index))+fn(m);
+    last=m.index+m[0].length;
+    if(m[0].length===0)re.lastIndex++;
+  }
+  return out+esc(code.slice(last));
+}
+const KW='const|let|var|function|return|if|else|for|while|class|new|import|export|from|async|await|try|catch|finally|throw|typeof|instanceof|null|undefined|true|false|this|of|in|do|switch|case|break|continue|default|extends|super|static|void|delete';
+const RE_JS=new RegExp('(\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/)|(`(?:\\\\[\\s\\S]|[^`\\\\])*`|"(?:\\\\.|[^"\\\\\\n])*"|\'(?:\\\\.|[^\'\\\\\\n])*\')|\\b('+KW+')\\b|\\b(\\d+\\.?\\d*)\\b','g');
+const RE_CSS=/(\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|(#[0-9a-fA-F]{3,8}\b|\b\d+\.?\d*(?:px|em|rem|%|vh|vw|s|ms|deg|fr)?\b)|([a-zA-Z-]+)(?=\s*:)/g;
+const RE_HTML=/<!--[\s\S]*?-->|<\/?!?[a-zA-Z][^>]*>/g;
+const RE_TAG=/^(<\/?!?[\w:-]+)|("[^"]*"|'[^']*')|([\w:@.-]+)(?==)/g;
+function hl(code,lang){
+  lang=String(lang||'').toLowerCase();
+  if(lang==='html'||lang==='htm'||lang==='xml'||lang==='svg'){
+    return tokenize(code,RE_HTML,m=>{
+      if(m[0].indexOf('<!--')===0)return '<span class="t-com">'+esc(m[0])+'</span>';
+      return tokenize(m[0],RE_TAG,x=>x[1]?'<span class="t-tag">'+esc(x[1])+'</span>':x[2]?'<span class="t-str">'+esc(x[2])+'</span>':'<span class="t-attr">'+esc(x[3])+'</span>');
+    });
+  }
+  if(lang==='css'){
+    return tokenize(code,RE_CSS,m=>m[1]?'<span class="t-com">'+esc(m[0])+'</span>':m[2]?'<span class="t-str">'+esc(m[0])+'</span>':m[3]?'<span class="t-num">'+esc(m[0])+'</span>':'<span class="t-attr">'+esc(m[0])+'</span>');
+  }
+  if(lang==='js'||lang==='javascript'||lang==='json'||lang==='ts'||lang==='mjs'){
+    return tokenize(code,RE_JS,m=>m[1]?'<span class="t-com">'+esc(m[0])+'</span>':m[2]?'<span class="t-str">'+esc(m[0])+'</span>':m[3]?'<span class="t-kw">'+esc(m[0])+'</span>':'<span class="t-num">'+esc(m[0])+'</span>');
+  }
+  return esc(code);
+}
+
+/* ---------- tiny markdown renderer ---------- */
+function md(src){
+  let out='';
+  String(src==null?'':src).split(/```/).forEach((part,idx)=>{
+    if(idx%2===1){
+      const nl=part.indexOf('\n');
+      const lang=nl>-1?part.slice(0,nl).trim():'';
+      const code=nl>-1?part.slice(nl+1):part;
+      out+='<div class="cb"><div class="cb-head"><span class="mlabel">'+esc(lang||'code')+'</span>'
+        +'<button class="cb-copy" data-code="'+esc(code)+'">'+I('copy',13)+'Copy</button></div>'
+        +'<pre>'+hl(code,lang||'txt')+'</pre></div>';
+      return;
+    }
+    let t=esc(part);
+    t=t.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+    t=t.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+    t=t.replace(/(^|[^*])\*([^*\s][^*\n]*)\*/g,'$1<em>$2</em>');
+    t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    let inUl=false,inOl=false,para=[];
+    const flush=()=>{if(para.length){out+='<p>'+para.join('<br>')+'</p>';para=[]}};
+    const close=()=>{if(inUl){out+='</ul>';inUl=false}if(inOl){out+='</ol>';inOl=false}};
+    t.split('\n').forEach(l=>{
+      const h=l.match(/^#{1,4}\s+(.*)/);
+      if(h){flush();close();out+='<h3>'+h[1]+'</h3>';return}
+      if(/^\s*[-•*]\s+/.test(l)){flush();if(inOl){out+='</ol>';inOl=false}if(!inUl){out+='<ul>';inUl=true}out+='<li>'+l.replace(/^\s*[-•*]\s+/,'')+'</li>';return}
+      if(/^\s*\d+[.)]\s+/.test(l)){flush();if(inUl){out+='</ul>';inUl=false}if(!inOl){out+='<ol>';inOl=true}out+='<li>'+l.replace(/^\s*\d+[.)]\s+/,'')+'</li>';return}
+      close();
+      if(l.trim()==='')flush();else para.push(l);
+    });
+    close();flush();
+  });
+  return out;
+}
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.cb-copy');
+  if(c){
+    const txt=c.dataset.code.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+    copyText(txt).then(()=>toast('Copied')).catch(()=>toast('Copy failed'));
+    return;
+  }
+  const tc=e.target.closest('.toolcard-head');
+  if(tc)tc.parentElement.classList.toggle('open');
+});
+
+/* =====================================================================
+   STARTER TEMPLATES
+   ===================================================================== */
+const L=function(){return Array.prototype.join.call(arguments,'\n')};
+const SC='<'+'/script>';
+const TEMPLATES={
+blank:n=>({
+ 'index.html':L('<!DOCTYPE html>','<html lang="en">','<head>','<meta charset="UTF-8">','<meta name="viewport" content="width=device-width, initial-scale=1">','<title>'+n+'</title>','<link rel="stylesheet" href="style.css">','</head>','<body>','  <main>','    <h1>'+n+'</h1>','    <p>Ask Xenom in chat to build something.</p>','  </main>','  <script src="script.js">'+SC,'</body>','</html>'),
+ 'style.css':L(':root{font-family:system-ui,sans-serif}','body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b0b0c;color:#f4f4f5}','main{text-align:center;padding:2rem}','h1{letter-spacing:-.02em}'),
+ 'script.js':"console.log('Project ready');"
+}),
+landing:n=>({
+ 'index.html':L('<!DOCTYPE html>','<html lang="en">','<head>','<meta charset="UTF-8">','<meta name="viewport" content="width=device-width, initial-scale=1">','<title>'+n+'</title>','<link rel="stylesheet" href="style.css">','</head>','<body>',
+  '  <header><span class="logo">'+n+'</span><button id="cta" class="btn">Get started</button></header>',
+  '  <section class="hero"><h1>Ship your idea<br>in days, not months.</h1><p>A clean starting point. Ask Xenom to rewrite this copy, add sections, or restyle everything.</p><button id="cta2" class="btn btn-dark">Learn more</button></section>',
+  '  <section class="features" id="features">',
+  '    <article><h3>Fast</h3><p>Static, lightweight pages that load instantly.</p></article>',
+  '    <article><h3>Responsive</h3><p>Looks right on phones, tablets and desktops.</p></article>',
+  '    <article><h3>Deployable</h3><p>Push to your host from the Deploy panel.</p></article>',
+  '  </section>','  <footer>© '+new Date().getFullYear()+' '+n+'</footer>','  <script src="script.js">'+SC,'</body>','</html>'),
+ 'style.css':L('*{box-sizing:border-box;margin:0}','body{font-family:system-ui,sans-serif;color:#111}','header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid #e5e5e5}','.logo{font-weight:700}','.btn{padding:10px 18px;border-radius:8px;border:1px solid #111;background:#fff;font-weight:600;cursor:pointer}','.btn-dark{background:#111;color:#fff}','.hero{padding:80px 24px;text-align:center}','.hero h1{font-size:clamp(30px,6vw,54px);letter-spacing:-.03em;line-height:1.05}','.hero p{color:#555;max-width:460px;margin:16px auto 24px}','.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:#e5e5e5;border-top:1px solid #e5e5e5}','.features article{background:#fff;padding:32px 24px}','.features h3{margin-bottom:8px}','.features p{color:#555;font-size:14px}','footer{padding:24px;text-align:center;color:#888;font-size:13px}'),
+ 'script.js':L("document.getElementById('cta').addEventListener('click',()=>document.querySelector('.hero').scrollIntoView({behavior:'smooth'}));","document.getElementById('cta2').addEventListener('click',()=>document.getElementById('features').scrollIntoView({behavior:'smooth'}));")
+}),
+dashboard:n=>({
+ 'index.html':L('<!DOCTYPE html>','<html lang="en">','<head>','<meta charset="UTF-8">','<meta name="viewport" content="width=device-width, initial-scale=1">','<title>'+n+'</title>','<link rel="stylesheet" href="style.css">','</head>','<body>','  <aside><strong>'+n+'</strong><nav><a class="on" href="#">Overview</a><a href="#">Reports</a><a href="#">Settings</a></nav></aside>','  <main><h1>Overview</h1><div class="cards" id="cards"></div><canvas id="chart" height="180"></canvas></main>','  <script src="script.js">'+SC,'</body>','</html>'),
+ 'style.css':L('*{box-sizing:border-box;margin:0}','body{display:flex;font-family:system-ui,sans-serif;background:#fafafa;color:#111;min-height:100vh}','aside{width:200px;border-right:1px solid #e5e5e5;padding:22px 16px}','aside nav{display:flex;flex-direction:column;gap:2px;margin-top:20px}','aside a{padding:9px 12px;border-radius:8px;color:#555;text-decoration:none;font-size:14px}','aside a.on{background:#111;color:#fff}','main{flex:1;padding:28px;min-width:0}','h1{margin-bottom:20px;letter-spacing:-.02em}','.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}','.card{border:1px solid #e5e5e5;border-radius:12px;padding:16px;background:#fff}','.card b{font-size:24px;display:block;margin-top:4px}','.card span{font-size:12px;color:#888}','#chart{width:100%;border:1px solid #e5e5e5;border-radius:12px;background:#fff}','@media(max-width:560px){aside{display:none}}'),
+ 'script.js':L("const stats=[{l:'Visitors',v:'12.4k'},{l:'Signups',v:'842'},{l:'Revenue',v:'$9,120'},{l:'Churn',v:'1.8%'}];","document.getElementById('cards').innerHTML=stats.map(s=>'<div class=\"card\"><span>'+s.l+'</span><b>'+s.v+'</b></div>').join('');","const c=document.getElementById('chart'),x=c.getContext('2d');","const data=[8,14,11,19,16,24,21,28,26,33];","const dpr=window.devicePixelRatio||1;c.width=c.offsetWidth*dpr;c.height=180*dpr;x.scale(dpr,dpr);","const w=c.offsetWidth,h=180,max=Math.max.apply(null,data);","x.strokeStyle='#111';x.lineWidth=2;x.beginPath();","data.forEach((d,i)=>{const px=20+i*(w-40)/(data.length-1),py=h-20-d/max*(h-50);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();")
+}),
+app:n=>({
+ 'index.html':L('<!DOCTYPE html>','<html lang="en">','<head>','<meta charset="UTF-8">','<meta name="viewport" content="width=device-width, initial-scale=1">','<title>'+n+'</title>','<link rel="stylesheet" href="style.css">','</head>','<body>','  <div class="app"><h1>Tasks</h1>','    <form id="f"><input id="inp" placeholder="Add a task" autocomplete="off"><button>Add</button></form>','    <ul id="list"></ul><p class="count" id="count"></p></div>','  <script src="script.js">'+SC,'</body>','</html>'),
+ 'style.css':L('*{box-sizing:border-box;margin:0}','body{font-family:system-ui,sans-serif;background:#0b0b0c;color:#f4f4f5}','.app{max-width:480px;margin:0 auto;padding:32px 20px}','h1{letter-spacing:-.02em;margin-bottom:20px}','form{display:flex;gap:8px;margin-bottom:18px}','input{flex:1;padding:12px;border-radius:8px;border:1px solid #333;background:#151517;color:#f4f4f5;font-size:16px}','button{padding:12px 18px;border-radius:8px;border:none;background:#f4f4f5;color:#0b0b0c;font-weight:600;cursor:pointer}','ul{list-style:none}','li{display:flex;align-items:center;gap:10px;padding:12px 4px;border-bottom:1px solid #232327}','li.done span{text-decoration:line-through;color:#666}','li span{flex:1;cursor:pointer}','li .del{background:none;color:#888;font-weight:400;padding:4px 8px}','.count{color:#777;font-size:12px;margin-top:14px}'),
+ 'script.js':L("let todos=[];try{todos=JSON.parse(localStorage.getItem('todos')||'[]')}catch(e){}","const list=document.getElementById('list'),count=document.getElementById('count');","function render(){","  list.innerHTML='';","  todos.forEach((t,i)=>{","    const li=document.createElement('li');if(t.done)li.className='done';","    const s=document.createElement('span');s.textContent=t.text;s.onclick=()=>{t.done=!t.done;save()};","    const d=document.createElement('button');d.className='del';d.textContent='×';d.onclick=()=>{todos.splice(i,1);save()};","    li.appendChild(s);li.appendChild(d);list.appendChild(li);","  });","  count.textContent=todos.filter(t=>!t.done).length+' open';","}","function save(){try{localStorage.setItem('todos',JSON.stringify(todos))}catch(e){}render()}","document.getElementById('f').onsubmit=e=>{e.preventDefault();const i=document.getElementById('inp'),v=i.value.trim();if(v){todos.push({text:v,done:false});i.value='';save()}};","render();")
+})
+};
+function makeTemplate(tpl,name){
+  const gen=(TEMPLATES[tpl]||TEMPLATES.blank)(name);
+  const out={};Object.keys(gen).forEach(k=>{out[k]={c:gen[k]+'\n',u:Date.now()}});return out;
+}
+
+/* =====================================================================
+   DASHBOARD
+   ===================================================================== */
+$('#newProjectBtn').innerHTML=I('plus',16)+'New project';
+$('#importBtn').innerHTML=I('upload',16)+'Import';
+$('#searchIcon').innerHTML=I('search',17);
+$('#dashSettingsBtn').innerHTML=I('sliders');
+$('#heroSettingsBtn').onclick=()=>openSettings();
+$('#dashSettingsBtn').onclick=()=>openSettings();
+$('#projSearch').addEventListener('input',renderProjects);
+
+function renderSysline(){
+  const el=$('#sysline');if(!el)return;
+  const g=prefs.providers.glm.key,m=prefs.providers.gemini.key;
+  el.innerHTML='<span><i class="dot '+(g?'on':'')+'"></i>GLM '+(g?'ready':'no key')+'</span>'
+    +'<span><i class="dot '+(m?'on':'')+'"></i>Gemini '+(m?'ready':'no key')+'</span>'
+    +'<span><i class="dot '+(prefs.backendUrl?'on':'')+'"></i>Backend '+(prefs.backendUrl?'set':'not set')+'</span>';
+  const ob=$('#onboard');
+  if(!anyKey()){
+    ob.style.display='flex';
+    ob.innerHTML='<div><b>Connect a model to get started</b><span>Paste a GLM or Gemini API key. It stays in this browser.</span></div><button class="btn btn-p" id="obBtn">'+I('key',15)+'Add API key</button>';
+    $('#obBtn').onclick=()=>openSettings();
+  }else{ob.style.display='none';ob.innerHTML=''}
+}
+function renderDashboard(){applyTheme();renderSysline();renderProjects()}
+function renderProjects(){
+  const q=($('#projSearch').value||'').toLowerCase();
+  const grid=$('#projGrid');
+  const list=projects.filter(p=>!q||p.name.toLowerCase().includes(q)||(p.desc||'').toLowerCase().includes(q));
+  if(!list.length){
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="glyph">'+I('code',26)+'</div>'
+      +'<h3>'+(projects.length?'No matching projects':'No projects yet')+'</h3>'
+      +'<p>'+(projects.length?'Try a different search.':'Create a project and describe what you want. Xenom writes the files and checks them in the live preview.')+'</p>'
+      +(projects.length?'':'<button class="btn btn-p" id="emptyCreate">'+I('plus',15)+'New project</button>')+'</div>';
+    const eb=$('#emptyCreate');if(eb)eb.onclick=()=>$('#newProjectBtn').click();
+    return;
+  }
+  grid.innerHTML='';
+  list.slice().sort((a,b)=>b.updatedAt-a.updatedAt).forEach(p=>{
+    const n=Object.keys(pFiles(p.id)).filter(k=>!k.endsWith('/')).length;
+    const card=document.createElement('div');
+    card.className='pcard';card.setAttribute('role','button');card.tabIndex=0;
+    card.innerHTML='<div class="pcard-top"><span class="mlabel">'+esc(p.typeLabel||p.type||'Project')+'</span>'
+      +'<button class="iconbtn" style="width:30px;height:30px;margin:-6px -6px 0 0" aria-label="Project menu">'+I('dots',16)+'</button></div>'
+      +'<div class="pcard-name">'+esc(p.name)+'</div>'
+      +'<div class="pcard-desc">'+esc(p.desc||'No description')+'</div>'
+      +'<div class="pcard-meta"><span>'+n+' files</span><span>'+fmtTime(p.updatedAt)+'</span></div>';
+    card.onclick=e=>{if(e.target.closest('.iconbtn'))return;openProject(p.id)};
+    card.onkeydown=e=>{if(e.key==='Enter')openProject(p.id)};
+    card.querySelector('.iconbtn').onclick=e=>{
+      e.stopPropagation();
+      openSheet(p.name,[
+        {icon:'chat',label:'Open project',action:()=>openProject(p.id)},
+        {icon:'pencil',label:'Rename',action:()=>renameProject(p)},
+        {icon:'trash',label:'Delete project',danger:true,action:()=>deleteProject(p)}
+      ]);
+    };
+    grid.appendChild(card);
+  });
+}
+function renameProject(p){
+  modal('Rename project','<div class="field"><input id="rn" value="'+esc(p.name)+'" maxlength="60"></div>',
+    [{label:'Cancel'},{label:'Save',primary:true,action:()=>{
+      const v=$('#rn').value.trim();if(!v)return false;
+      p.name=v;p.updatedAt=Date.now();saveProjects();renderDashboard();
+      if(cur&&cur.id===p.id)$('#workTitle').textContent=v;
+    }}]);
+  setTimeout(()=>{const r=$('#rn');if(r)r.select()},60);
+}
+function deleteProject(p){
+  confirmDlg('Delete project','"'+p.name+'" and all of its files and chat history will be permanently removed.','Delete',()=>{
+    projects=projects.filter(x=>x.id!==p.id);
+    LS.del('files_'+p.id);LS.del('chat_'+p.id);
+    saveProjects();renderDashboard();toast('Project deleted');
+  });
+}
+$('#newProjectBtn').onclick=()=>{
+  modal('New project',
+    '<div class="field"><label class="mlabel">Name</label><input id="npName" placeholder="e.g. Aurora landing" maxlength="60"></div>'
+    +'<div class="field"><label class="mlabel">What should it be?</label><textarea id="npDesc" rows="3" placeholder="Describe the idea. Xenom reads this as project context."></textarea></div>'
+    +'<div class="grid2"><div class="field"><label class="mlabel">Type</label><select id="npType"><option value="website">Website</option><option value="landing">Landing page</option><option value="dashboard">Dashboard</option><option value="app">Web app</option></select></div>'
+    +'<div class="field"><label class="mlabel">Starting point</label><select id="npTpl"><option value="auto">Let Xenom decide</option><option value="blank">Blank</option><option value="landing">Landing page</option><option value="dashboard">Dashboard</option><option value="app">Interactive app</option></select></div></div>'
+    +(anyKey()?'<label style="display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--tx2);margin-top:2px"><input type="checkbox" id="npBuild" checked> Have Xenom start building from my description</label>':''),
+    [{label:'Cancel'},{label:'Create project',primary:true,action:()=>{
+      const name=$('#npName').value.trim();
+      if(!name){toast('Give your project a name');return false}
+      const desc=$('#npDesc').value.trim(),type=$('#npType').value;
+      let tpl=$('#npTpl').value;
+      if(tpl==='auto'){
+        const t=(desc+' '+name+' '+type).toLowerCase();
+        if(/dashboard|analytics|admin|chart/.test(t))tpl='dashboard';
+        else if(/todo|task|app|tool|game|calc/.test(t))tpl='app';
+        else if(/landing|market|launch|product|page/.test(t))tpl='landing';
+        else tpl='blank';
+      }
+      const buildNow=!!($('#npBuild')&&$('#npBuild').checked&&desc);
+      const root=(prefs.deployDefaults.remoteRoot||'/public_html').replace(/\/+$/,'');
+      const dd=prefs.deployDefaults;
+      const p={
+        id:uid(),name:name,desc:desc,type:type,
+        typeLabel:{website:'Website',landing:'Landing page',dashboard:'Dashboard',app:'Web app'}[type],
+        template:tpl,createdAt:Date.now(),updatedAt:Date.now(),
+        deploy:{host:dd.host,port:dd.port,username:dd.username,password:dd.password,secure:!!dd.secure,remoteDir:root+'/'+slug(name),domain:dd.domain,db:{host:'localhost',name:'',user:'',pass:''},state:'READY',lastDeploy:null,url:'',log:''}
+      };
+      saveFiles(p.id,makeTemplate(tpl,name));
+      projects.push(p);saveProjects();
+      openProject(p.id);
+      if(buildNow){
+        $('#chatInput').value='Build this project from scratch based on the goal above. Replace the starter files with a polished, complete, responsive result.';
+        sendMessage();
+      }else toast('Project created');
+    }}]);
+  setTimeout(()=>{const n=$('#npName');if(n)n.focus()},80);
+};
+$('#importBtn').onclick=()=>$('#importInput').click();
+$('#importInput').onchange=e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  f.text().then(t=>{
+    const j=JSON.parse(t);
+    if(!j||typeof j.files!=='object')throw new Error('not a Xenom project file');
+    const name=String(j.name||f.name.replace(/\.json$/,'')||'Imported');
+    const root=(prefs.deployDefaults.remoteRoot||'/public_html').replace(/\/+$/,'');
+    const dd=prefs.deployDefaults;
+    const p={id:uid(),name:name,desc:String(j.desc||''),type:'website',typeLabel:'Website',template:'blank',createdAt:Date.now(),updatedAt:Date.now(),
+      deploy:{host:dd.host,port:dd.port,username:dd.username,password:dd.password,secure:!!dd.secure,remoteDir:root+'/'+slug(name),domain:dd.domain,db:{host:'localhost',name:'',user:'',pass:''},state:'READY',lastDeploy:null,url:'',log:''}};
+    const fl={};Object.keys(j.files).forEach(k=>{const kk=norm(k);if(kk&&typeof j.files[k]==='string')fl[kk]={c:j.files[k],u:Date.now()}});
+    saveFiles(p.id,fl);projects.push(p);saveProjects();renderDashboard();toast('Imported "'+name+'"');
+  }).catch(err=>toast('Import failed: '+err.message));
+};
+
+/* =====================================================================
+   WORKSPACE
+   ===================================================================== */
+$('#backBtn').innerHTML=I('back');
+$('#backBtn').onclick=()=>{
+  if(agentBusy&&!confirm('Xenom is still working. Leave anyway?'))return;
+  stopAgent(true);flushEditor();saveChatState();cur=null;
+  show('screen-dash');renderDashboard();
+};
+$('#workMenuBtn').innerHTML=I('dots');
+$('#workMenuBtn').onclick=()=>{
+  openSheet(cur.name,[
+    {icon:'terminal',label:'Terminal',action:openTerminal},
+    {icon:'upload',label:'Deploy',action:openDeploy},
+    {icon:'sliders',label:'Project settings',action:openProjectSettings},
+    {icon:'download',label:'Export project (JSON)',action:exportProject},
+    {icon:'trash',label:'Clear conversation',danger:true,action:()=>confirmDlg('Clear conversation','All chat messages in this project will be removed. Files are kept.','Clear',()=>{chat=[];saveChat(cur.id,chat);renderChat()})}
+  ]);
+};
+function exportProject(){
+  const out={name:cur.name,desc:cur.desc||'',files:{}};
+  Object.keys(files).forEach(k=>{if(!k.endsWith('/'))out.files[k]=files[k].c});
+  dl(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),slug(cur.name)+'-xenom.json');
+  toast('Project exported');
+}
+const NAVS=[{t:'chat',l:'Chat',i:'chat'},{t:'preview',l:'Preview',i:'monitor'},{t:'files',l:'Files',i:'layers'}];
+function buildNav(){
+  $('#bottomNav').innerHTML=NAVS.map(n=>'<button data-t="'+n.t+'" aria-label="'+n.l+'">'+I(n.i,20)+'<span>'+n.l+'</span></button>').join('');
+  document.querySelectorAll('#bottomNav button').forEach(b=>{b.onclick=()=>switchTab(b.dataset.t)});
+  $('#rail').innerHTML=NAVS.map(n=>'<button data-t="'+n.t+'" aria-label="'+n.l+'" title="'+n.l+'">'+I(n.i,19)+'</button>').join('')
+    +'<div class="spacer"></div>'
+    +'<button data-a="terminal" title="Terminal" aria-label="Terminal">'+I('terminal',19)+'</button>'
+    +'<button data-a="deploy" title="Deploy" aria-label="Deploy">'+I('upload',19)+'</button>'
+    +'<button data-a="settings" title="Settings" aria-label="Settings">'+I('sliders',19)+'</button>';
+  document.querySelectorAll('#rail button').forEach(b=>{
+    b.onclick=()=>{
+      if(b.dataset.t)switchTab(b.dataset.t);
+      else if(b.dataset.a==='terminal')openTerminal();
+      else if(b.dataset.a==='deploy')openDeploy();
+      else openSettings();
+    };
+  });
+}
+buildNav();
+const wide=()=>window.innerWidth>=1200;
+function switchTab(t){
+  if(tab==='files'&&t!=='files')flushEditor();
+  tab=t;$('#workMain').dataset.tab=t;
+  document.querySelectorAll('#bottomNav button,#rail button[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(t==='preview'||(t==='chat'&&wide()))refreshPreview();
+  if(t==='files')renderFiles();
+}
+function maybeRefreshPreview(){if(tab==='preview'||(tab==='chat'&&wide()))refreshPreview()}
+let rzT=null;
+window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(cur&&tab==='chat'&&wide())refreshPreview()},250)});
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id))}
+function openProject(id){
+  cur=projects.find(p=>p.id===id);
+  if(!cur)return;
+  files=pFiles(id);chat=pChat(id);
+  cur.lastOpened=Date.now();saveProjects();
+  expanded=new Set();knownDirs=new Set();pvPage='index.html';editingPath=null;edDirty=false;
+  closeEditor(true);
+  $('#workTitle').textContent=cur.name;
+  updateModelChip();
+  attachments=[];renderAttachStrip();
+  previewErrors=[];renderPreviewErrors();
+  show('screen-work');switchTab('chat');renderChat();
+}
+function saveChatState(){if(cur){saveChat(cur.id,chat);cur.updatedAt=Date.now();saveProjects()}}
+function updateModelChip(){
+  const m=curModel();
+  $('#modelName').textContent=m?(providerLabel(m.provider)+' · '+m.id):'model';
+  $('#workStatus').className='dot'+(hasKey()?' on':'');
+}
+$('#modelChip').onclick=()=>{
+  const items=prefs.models.filter(m=>m.id).map(m=>({icon:m.k===prefs.current?'check':'code',label:providerLabel(m.provider)+' · '+m.id+(m.vision?' · vision':''),action:()=>{
+    prefs.current=m.k;savePrefs();updateModelChip();toast('Model: '+m.id);
+  }}));
+  items.push({icon:'sliders',label:'Manage models and keys',action:()=>openSettings()});
+  openSheet('Select model',items);
+};
+function openProjectSettings(){
+  modal('Project settings',
+    '<div class="field"><label class="mlabel">Name</label><input id="psName" value="'+esc(cur.name)+'"></div>'
+    +'<div class="field"><label class="mlabel">Goal (shared with the agent)</label><textarea id="psDesc" rows="4">'+esc(cur.desc||'')+'</textarea></div>'
+    +'<div class="statusline">'+I('clock',13)+'Created '+new Date(cur.createdAt).toLocaleDateString()+' · '+Object.keys(files).filter(k=>!k.endsWith('/')).length+' files</div>',
+    [{label:'Cancel'},{label:'Save',primary:true,action:()=>{
+      cur.name=$('#psName').value.trim()||cur.name;
+      cur.desc=$('#psDesc').value.trim();
+      cur.updatedAt=Date.now();saveProjects();
+      $('#workTitle').textContent=cur.name;
+    }}]);
+}
+
+/* =====================================================================
+   FILES + EDITOR
+   ===================================================================== */
+$('#edEmptyIcon').innerHTML=I('file',28);
+$('#edBack').innerHTML=I('back');
+function fbadge(path,isDir){
+  if(isDir)return '<span class="fbadge dir">'+I('folder',16)+'</span>';
+  const e=path.split('.').pop().toLowerCase();
+  const m={html:'&lt;&gt;',htm:'&lt;&gt;',css:'#',js:'JS',mjs:'JS',json:'{}',md:'MD',png:'IMG',jpg:'IMG',jpeg:'IMG',gif:'IMG',svg:'SVG',txt:'TXT'};
+  return '<span class="fbadge">'+(m[e]||'•')+'</span>';
+}
+const isDirPath=p=>{p=norm(p);return Object.keys(files).some(k=>k===p+'/'||k.indexOf(p+'/')===0)};
+const fileKeys=()=>Object.keys(files).filter(k=>!k.endsWith('/'));
+function treeEntries(){
+  const set=new Set();
+  Object.keys(files).forEach(k=>{
+    set.add(k);
+    const p=k.replace(/\/$/,'').split('/');
+    for(let i=1;i<p.length;i++)set.add(p.slice(0,i).join('/')+'/');
+  });
+  const info=a=>({segs:a.replace(/\/$/,'').split('/'),isDir:a.endsWith('/')});
+  return Array.from(set).sort((a,b)=>{
+    const A=info(a),B=info(b),n=Math.min(A.segs.length,B.segs.length);
+    for(let i=0;i<n;i++){
+      if(A.segs[i]!==B.segs[i]){
+        const ad=i<A.segs.length-1||A.isDir,bd=i<B.segs.length-1||B.isDir;
+        if(ad!==bd)return ad?-1:1;
+        return A.segs[i]<B.segs[i]?-1:1;
+      }
+    }
+    return A.segs.length-B.segs.length;
+  });
+}
+function renderFiles(){
+  const tree=$('#fileTree');tree.innerHTML='';
+  const all=treeEntries();
+  all.forEach(p=>{if(p.endsWith('/')&&!knownDirs.has(p)){knownDirs.add(p);expanded.add(p)}});
+  const visible=all.filter(path=>{
+    const segs=path.replace(/\/$/,'').split('/');
+    for(let i=1;i<segs.length;i++){if(!expanded.has(segs.slice(0,i).join('/')+'/'))return false}
+    return true;
+  });
+  if(!visible.length){
+    tree.innerHTML='<div class="empty" style="padding:40px 10px"><h3 style="font-size:15px">No files</h3><p style="font-size:12.5px">Create a file below or ask Xenom in chat.</p></div>';
+  }
+  visible.forEach(path=>{
+    const isDir=path.endsWith('/');
+    const depth=path.replace(/\/$/,'').split('/').length-1;
+    const row=document.createElement('div');
+    row.className='frow'+(isDir&&!expanded.has(path)?' closed':'')+(editingPath===path?' sel':'');
+    row.style.paddingLeft=(8+depth*16)+'px';
+    row.innerHTML='<span class="fchev">'+(isDir?I('chevD',13):'')+'</span>'+fbadge(path,isDir)
+      +'<span class="fname">'+esc(path.replace(/\/$/,'').split('/').pop())+'</span>'
+      +((files[path]&&files[path].changed&&!isDir)?'<span class="fdot" title="Changed this session"></span>':'')
+      +'<button class="iconbtn more" aria-label="Actions">'+I('dots',16)+'</button>';
+    row.querySelector('.more').onclick=e=>{e.stopPropagation();fileActions(path,isDir)};
+    row.onclick=()=>{
+      if(isDir){if(expanded.has(path))expanded.delete(path);else expanded.add(path);renderFiles()}
+      else openEditor(path);
+    };
+    row.oncontextmenu=e=>{e.preventDefault();fileActions(path,isDir)};
+    tree.appendChild(row);
+  });
+  $('#pvCount').textContent=fileKeys().length+' files';
+}
+function removePath(path,isDir){
+  Object.keys(files).forEach(k=>{if(k===path||(isDir&&k.indexOf(path)===0))delete files[k]});
+}
+function fileActions(path,isDir){
+  const items=[
+    {icon:isDir?'folder':'file',label:isDir?'Toggle folder':'Open',action:()=>{
+      if(isDir){if(expanded.has(path))expanded.delete(path);else expanded.add(path);renderFiles()}else openEditor(path);
+    }},
+    {icon:'pencil',label:'Rename or move',action:()=>renameFile(path,isDir)}
+  ];
+  if(!isDir)items.push({icon:'copy',label:'Duplicate',action:()=>{
+    const dot=path.lastIndexOf('.'),ext=dot>path.lastIndexOf('/')?path.slice(dot):'',base=ext?path.slice(0,dot):path;
+    files[base+'-copy'+ext]={c:files[path].c,u:Date.now(),changed:true};
+    saveFiles(cur.id,files);renderFiles();toast('Duplicated');
+  }});
+  items.push({icon:'trash',label:'Delete',danger:true,action:()=>{
+    confirmDlg('Delete '+(isDir?'folder':'file'),'"'+path+'" will be removed from the project.','Delete',()=>{
+      removePath(path,isDir);saveFiles(cur.id,files);
+      if(editingPath&&(editingPath===path||(isDir&&editingPath.indexOf(path)===0)))closeEditor(true);
+      renderFiles();maybeRefreshPreview();
+    });
+  }});
+  openSheet(path,items);
+}
+function renameFile(path,isDir){
+  modal('Rename or move','<div class="field"><input id="rnF" value="'+esc(path.replace(/\/$/,''))+'"></div>',
+    [{label:'Cancel'},{label:'Rename',primary:true,action:()=>{
+      const v=norm($('#rnF').value),old=path.replace(/\/$/,'');
+      if(!v||v===old)return;
+      if(files[v]||files[v+'/']){toast('Target name already exists');return false}
+      const moves=[];
+      Object.keys(files).forEach(k=>{
+        if(k===path||(isDir&&k.indexOf(path)===0)){
+          moves.push([k,isDir?v+'/'+k.slice(path.length):v]);
+        }
+      });
+      moves.forEach(mv=>{files[mv[1]]=files[mv[0]];delete files[mv[0]]});
+      if(isDir&&expanded.has(path)){expanded.delete(path);expanded.add(v+'/')}
+      saveFiles(cur.id,files);
+      if(editingPath===path){editingPath=v;$('#edPath').textContent=v}
+      renderFiles();maybeRefreshPreview();
+    }}]);
+  setTimeout(()=>{const r=$('#rnF');if(r)r.select()},60);
+}
+$('#newFileBtn').onclick=()=>{
+  modal('New file','<div class="field"><input id="nfN" placeholder="e.g. about.html or js/app.js"></div>',
+    [{label:'Cancel'},{label:'Create',primary:true,action:()=>{
+      const p=norm($('#nfN').value);
+      if(!p)return false;
+      if(files[p]){toast('A file with that name exists');return false}
+      files[p]={c:'',u:Date.now(),changed:true};
+      saveFiles(cur.id,files);renderFiles();openEditor(p);
+    }}]);
+  setTimeout(()=>{const n=$('#nfN');if(n)n.focus()},80);
+};
+$('#newFolderBtn').onclick=()=>{
+  modal('New folder','<div class="field"><input id="ndN" placeholder="e.g. assets"></div>',
+    [{label:'Cancel'},{label:'Create',primary:true,action:()=>{
+      const p=norm($('#ndN').value);
+      if(!p)return false;
+      files[p+'/']={c:'',u:Date.now()};
+      saveFiles(cur.id,files);renderFiles();
+    }}]);
+  setTimeout(()=>{const n=$('#ndN');if(n)n.focus()},80);
+};
+function openEditor(path){
+  if(!files[path])return;
+  flushEditor();
+  editingPath=path;edDirty=false;
+  $('#edPath').textContent=path;
+  $('#edInput').value=files[path].c;
+  $('#editor').classList.add('on');
+  $('#edSave').classList.remove('dirty');
+  updateEd();
+  $('#edInput').scrollTop=0;$('#edInput').scrollLeft=0;syncScroll();
+  if(window.innerWidth>=1024)renderFiles();
+}
+function flushEditor(){if(editingPath&&edDirty&&files[editingPath])saveEditor(true)}
+function closeEditor(skipFlush){
+  if(!skipFlush)flushEditor();
+  $('#editor').classList.remove('on');editingPath=null;edDirty=false;
+  if(cur&&tab==='files')renderFiles();
+}
+$('#edBack').onclick=()=>closeEditor();
+function updateEd(){
+  const v=$('#edInput').value;
+  $('#edHl').innerHTML=hl(v,(editingPath||'').split('.').pop())+'\n';
+  const n=lineCount(v),nums=[];
+  for(let i=1;i<=n;i++)nums.push(i);
+  $('#edGutter').textContent=nums.join('\n');
+}
+function syncScroll(){
+  const t=$('#edInput');
+  $('#edHl').scrollTop=t.scrollTop;$('#edHl').scrollLeft=t.scrollLeft;
+  $('#edGutter').scrollTop=t.scrollTop;
+}
+let edTimer=null;
+$('#edInput').addEventListener('input',()=>{
+  edDirty=true;$('#edSave').classList.add('dirty');
+  clearTimeout(edTimer);edTimer=setTimeout(updateEd,60);
+});
+$('#edInput').addEventListener('scroll',syncScroll);
+function insertAtCursor(t,text){
+  t.focus();
+  let ok=false;
+  try{ok=document.execCommand('insertText',false,text)}catch(e){}
+  if(!ok){const s=t.selectionStart;t.setRangeText(text,s,t.selectionEnd,'end');t.dispatchEvent(new Event('input'))}
+}
+$('#edInput').addEventListener('keydown',e=>{
+  const t=e.target;
+  if(e.key==='Tab'){e.preventDefault();insertAtCursor(t,'  ');return}
+  if(e.key==='Enter'&&!e.ctrlKey&&!e.metaKey){
+    const s=t.selectionStart,before=t.value.slice(0,s),line=before.slice(before.lastIndexOf('\n')+1);
+    let indent=(line.match(/^\s*/)||[''])[0];
+    if(/[{(\[]\s*$/.test(line))indent+='  ';
+    e.preventDefault();insertAtCursor(t,'\n'+indent);return;
+  }
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveEditor()}
+});
+$('#edSave').onclick=()=>saveEditor();
+function saveEditor(silent){
+  if(!editingPath||!files[editingPath])return;
+  files[editingPath]={c:$('#edInput').value,u:Date.now(),changed:true};
+  saveFiles(cur.id,files);
+  edDirty=false;$('#edSave').classList.remove('dirty');
+  if(!silent){toast('Saved '+editingPath);renderFiles()}
+  maybeRefreshPreview();
+}
+
+/* =====================================================================
+   PREVIEW
+   ===================================================================== */
+$('#pvRefresh').innerHTML=I('refresh',16);
+$('#pvNewTab').innerHTML=I('ext',16);
+$('#pvMobile').innerHTML=I('phone',13)+'Phone';
+$('#pvDesktop').innerHTML=I('monitor',13)+'Desktop';
+$('#pvRefresh').onclick=()=>refreshPreview(true);
+$('#pvMobile').onclick=()=>{$('#pvStage').classList.add('mobile');$('#pvMobile').classList.add('on');$('#pvDesktop').classList.remove('on')};
+$('#pvDesktop').onclick=()=>{$('#pvStage').classList.remove('mobile');$('#pvDesktop').classList.add('on');$('#pvMobile').classList.remove('on')};
+$('#pvPageSel').onchange=e=>{pvPage=e.target.value;refreshPreview()};
+$('#pvNewTab').onclick=()=>{
+  const s=buildPreviewSrc(pvPage,true);
+  if(s==null){toast('No HTML file to preview');return}
+  const url=URL.createObjectURL(new Blob([s],{type:'text/html'}));
+  window.open(url,'_blank');setTimeout(()=>URL.revokeObjectURL(url),60000);
+};
+const htmlPages=()=>fileKeys().filter(k=>/\.html?$/i.test(k)).sort();
+const REPORTER='<script>(function(){'
+  +'function mk(){var m={};return{getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null},get length(){return Object.keys(m).length}}}'
+  +'["localStorage","sessionStorage"].forEach(function(n){try{window[n].getItem("__p")}catch(e){try{Object.defineProperty(window,n,{value:mk(),configurable:true})}catch(e2){}}});'
+  +'function send(t,msg){try{parent.postMessage({__xenom:1,type:t,msg:String(msg)},"*")}catch(e){}}'
+  +'window.addEventListener("error",function(e){'
+  +'if(e.target&&e.target!==window){var u=e.target.src||e.target.href||"";if(u&&!/^(https?:|data:|blob:)/i.test(u))send("error","Failed to load local file: "+(e.target.getAttribute("src")||e.target.getAttribute("href")));return}'
+  +'send("error",(e.message||"Script error")+(e.lineno?" (line "+e.lineno+")":""))},true);'
+  +'window.addEventListener("unhandledrejection",function(e){send("error","Unhandled promise rejection: "+((e.reason&&e.reason.message)||e.reason))});'
+  +'var ce=console.error;console.error=function(){try{send("error",Array.prototype.map.call(arguments,String).join(" "))}catch(e){}ce.apply(console,arguments)};'
+  +'document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a[href]");if(!a)return;var h=a.getAttribute("href");if(!h||h.charAt(0)==="#"||/^(mailto:|tel:|javascript:)/i.test(h))return;e.preventDefault();if(/^https?:/i.test(h)){window.open(h,"_blank")}else{send("nav",h)}},true);'
+  +'})();<'+'/script>';
+function buildPreviewSrc(page,bare){
+  page=norm(page||'index.html');
+  let html=files[page]?files[page].c:null;
+  if(html==null&&page==='index.html'){const pg=htmlPages();if(pg.length)html=files[pg[0]].c}
+  if(html==null)return null;
+  html=html.replace(/<link\b[^>]*\bhref=["']([^"']+\.css)(?:\?[^"']*)?["'][^>]*>/gi,(m,href)=>{
+    const f=files[norm(href)];return f?'<style>\n'+f.c+'\n</style>':m;
+  });
+  html=html.replace(/<script\b([^>]*?)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi,(m,a1,src,a2)=>{
+    const f=files[norm(src.split('?')[0])];
+    if(!f)return m;
+    return '<script'+(a1+' '+a2).replace(/\s+/g,' ').replace(/\s$/,'')+'>\n'+f.c.replace(/<\/script/gi,'<\\/script')+'\n<'+'/script>';
+  });
+  html=html.replace(/(\b(?:src|href)=["'])([^"':#?]+\.svg)(["'])/gi,(m,a,p,b)=>{
+    const f=files[norm(p)];
+    return f?a+'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(f.c)+b:m;
+  });
+  if(bare)return html;
+  if(/<head[^>]*>/i.test(html))return html.replace(/<head[^>]*>/i,m=>m+REPORTER);
+  return REPORTER+html;
+}
+function refreshPreview(manual){
+  const frame=$('#pvFrame'),msg=$('#pvMsg');
+  if(!cur){msg.style.display='flex';msg.innerHTML='<span class="mlabel">No project open</span>';return}
+  const pages=htmlPages(),sel=$('#pvPageSel');
+  if(pages.indexOf(pvPage)<0&&pages.length)pvPage=pages.indexOf('index.html')>=0?'index.html':pages[0];
+  if(pages.length>1){
+    sel.style.display='';
+    sel.innerHTML=pages.map(p=>'<option value="'+esc(p)+'"'+(p===pvPage?' selected':'')+'>'+esc(p)+'</option>').join('');
+  }else sel.style.display='none';
+  const src=buildPreviewSrc(pvPage);
+  if(src==null){
+    frame.srcdoc='';
+    msg.style.display='flex';
+    msg.innerHTML='<div style="border:1px solid var(--line2);border-radius:14px;padding:14px;color:var(--tx2)">'+I('code',24)+'</div>'
+      +'<h3 style="margin-top:12px;font-size:16px">Nothing to show yet</h3>'
+      +'<p style="color:var(--tx2);font-size:13px;margin-top:6px;max-width:300px">This project has no HTML file. Create <b>index.html</b>, or ask Xenom to build one in chat.</p>';
+    return;
+  }
+  msg.style.display='none';
+  previewErrors=[];renderPreviewErrors();
+  frame.srcdoc=src;
+  if(manual)toast('Preview refreshed');
+}
+window.addEventListener('message',e=>{
+  const d=e.data;
+  if(!d||!d.__xenom)return;
+  if(e.source!==$('#pvFrame').contentWindow)return;
+  if(d.type==='error'){
+    previewErrors.push(d.msg);
+    if(previewErrors.length>40)previewErrors=previewErrors.slice(-20);
+    renderPreviewErrors();
+  }else if(d.type==='nav'){
+    const target=norm(String(d.msg).split('#')[0].split('?')[0]);
+    if(files[target]){pvPage=target;refreshPreview()}
+    else toast('Page not found in project: '+target);
+  }
+});
+function uniqErrors(list){const seen={};return list.filter(e=>{if(seen[e])return false;seen[e]=true;return true})}
+function renderPreviewErrors(){
+  const box=$('#pvErrs');
+  if(!previewErrors.length){box.classList.remove('on');box.innerHTML='';return}
+  box.classList.add('on');
+  const uniq=uniqErrors(previewErrors).slice(-8);
+  box.innerHTML=uniq.map(er=>'<div class="pv-err"><b>!</b><span style="flex:1">'+esc(er)+'</span></div>').join('')
+    +'<div style="padding:10px 14px"><button class="btn btn-p" style="width:100%" id="askFix">'+I('chat',15)+'Ask Xenom to fix '+uniq.length+' error'+(uniq.length>1?'s':'')+'</button></div>';
+  $('#askFix').onclick=()=>{
+    if(agentBusy){toast('Xenom is already working');return}
+    if(!hasKey()){openSettings();toast('Add an API key first');return}
+    $('#chatInput').value='The live preview reported these runtime errors:\n\n'+uniq.map(e=>'- '+e).join('\n')+'\n\nFind the root cause, fix it with the smallest change possible, and keep the existing structure.';
+    switchTab('chat');sendMessage();
+  };
+}
+/* hidden probe used by the agent "check" tool */
+function probePreview(src){
+  return new Promise(res=>{
+    const ifr=document.createElement('iframe');
+    ifr.setAttribute('sandbox','allow-scripts allow-forms');
+    ifr.style.cssText='position:fixed;left:-9999px;top:0;width:390px;height:700px;border:0;visibility:hidden';
+    const errs=[];
+    const h=e=>{if(e.source===ifr.contentWindow&&e.data&&e.data.__xenom&&e.data.type==='error')errs.push(e.data.msg)};
+    window.addEventListener('message',h);
+    ifr.srcdoc=src;document.body.appendChild(ifr);
+    setTimeout(()=>{window.removeEventListener('message',h);ifr.remove();res(uniqErrors(errs))},1800);
+  });
+}
+async function runCheck(){
+  const issues=[];
+  const jsOK=c=>{try{new Function(c);return null}catch(e){return e.message}};
+  fileKeys().forEach(k=>{
+    const c=files[k].c;
+    if(/\.js$/i.test(k)){if(!/^\s*(import|export)\s/m.test(c)){const er=jsOK(c);if(er)issues.push('SYNTAX ERROR in '+k+': '+er)}}
+    if(/\.json$/i.test(k)){try{JSON.parse(c)}catch(e){issues.push('INVALID JSON in '+k+': '+e.message)}}
+    if(/\.html?$/i.test(k)){
+      let m;const reS=/<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
+      while((m=reS.exec(c))){
+        const attrs=m[1],body=m[2];
+        const sm=/\bsrc=["']([^"']+)["']/i.exec(attrs);
+        if(sm){
+          if(!/^(https?:)?\/\//i.test(sm[1])&&!files[norm(sm[1].split('?')[0])])issues.push('MISSING FILE: '+k+' loads script "'+sm[1]+'" which is not in the project');
+        }else if(body.trim()&&!/type=["']?module/i.test(attrs)&&!/type=["']?(text\/template|application\/json|importmap)/i.test(attrs)){
+          const er=jsOK(body);if(er)issues.push('SYNTAX ERROR in inline <script> of '+k+': '+er);
+        }
+      }
+      const reL=/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi;
+      while((m=reL.exec(c))){
+        if(/rel=["']?(stylesheet|icon)/i.test(m[0])&&!/^(https?:)?\/\//i.test(m[1])&&!/^data:/i.test(m[1])&&!files[norm(m[1].split('?')[0])])issues.push('MISSING FILE: '+k+' links "'+m[1]+'" which is not in the project');
+      }
+    }
+  });
+  const src=buildPreviewSrc(pvPage);
+  if(src==null)issues.push('NO HTML ENTRY FILE: create index.html so the preview can render');
+  else(await probePreview(src)).forEach(e=>issues.push('RUNTIME ERROR: '+e));
+  return{clean:!issues.length,output:issues.length?issues.join('\n'):'CHECK PASSED — no syntax errors, all local references resolve, preview loaded without runtime errors.'};
+}
+
+/* =====================================================================
+   TERMINAL (sandbox on project files)
+   ===================================================================== */
+let termHist=[],histIdx=-1;
+function openTerminal(){
+  openDrawer('Terminal · '+cur.name);
+  const b=$('#drawerBody');b.classList.add('termbody');
+  b.innerHTML='<div class="term" id="termOut"></div>'
+    +'<div class="term-in"><span class="ps">$</span><input id="termIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command"></div>'
+    +'<div style="padding:8px 14px;border-top:1px solid var(--line)"><span class="mlabel">Sandbox runs on your project files. node runs JavaScript in an isolated frame (no require).</span></div>';
+  const inp=$('#termIn');
+  tprint('Xenom sandbox — '+cur.name,'dim');
+  tprint('Type "help" for commands.','dim');
+  inp.onkeydown=async e=>{
+    if(e.key==='ArrowUp'){histIdx=Math.min(histIdx+1,termHist.length-1);if(termHist[histIdx])inp.value=termHist[histIdx];e.preventDefault()}
+    else if(e.key==='ArrowDown'){histIdx=Math.max(histIdx-1,-1);inp.value=histIdx<0?'':termHist[histIdx];e.preventDefault()}
+    else if(e.key==='Enter'){
+      const cmd=inp.value.trim();inp.value='';histIdx=-1;
+      if(!cmd)return;
+      termHist.unshift(cmd);
+      tprint('$ '+cmd,'cmd');
+      const r=await runCommand(cmd,false);
+      if(r.output)tprint(r.output,r.ok?'':'err');
+    }
+  };
+  setTimeout(()=>inp.focus(),200);
+}
+function tprint(s,cls){
+  const o=$('#termOut');if(!o)return;
+  const d=document.createElement('div');d.className='tline '+(cls||'');d.textContent=s;
+  o.appendChild(d);o.scrollTop=o.scrollHeight;
+}
+function runJsSandbox(code){
+  return new Promise(res=>{
+    const ifr=document.createElement('iframe');
+    ifr.setAttribute('sandbox','allow-scripts');
+    ifr.style.cssText='position:fixed;left:-9999px;width:1px;height:1px;border:0';
+    const logs=[];let done=false;
+    const fin=()=>{if(done)return;done=true;window.removeEventListener('message',h);ifr.remove();res(logs.join('\n'))};
+    const h=e=>{
+      if(e.source!==ifr.contentWindow||!e.data||!e.data.__xr)return;
+      if(e.data.t==='log')logs.push(e.data.m);
+      else if(e.data.t==='err')logs.push('Error: '+e.data.m);
+      else if(e.data.t==='done')setTimeout(fin,700);
+    };
+    window.addEventListener('message',h);
+    setTimeout(()=>{if(!done){logs.push('(stopped after 5s)');fin()}},5000);
+    const pre='(function(){function f(a){return Array.prototype.map.call(a,function(x){if(typeof x==="object"&&x!==null){try{return JSON.stringify(x)}catch(e){return String(x)}}return String(x)}).join(" ")}'
+      +'function s(t,m){parent.postMessage({__xr:1,t:t,m:m},"*")}'
+      +'["log","info","warn","error"].forEach(function(k){console[k]=function(){s("log",(k==="log"||k==="info"?"":k+": ")+f(arguments))}});'
+      +'window.onerror=function(m,u,l){s("err",m+(l?" (line "+l+")":""));return true};'
+      +'window.addEventListener("unhandledrejection",function(e){s("err",String((e.reason&&e.reason.message)||e.reason))})})();';
+    ifr.srcdoc='<script>'+pre+'<'+'/script><script>'+code.replace(/<\/script/gi,'<\\/script')+'<'+'/script><script>parent.postMessage({__xr:1,t:"done"},"*")<'+'/script>';
+    document.body.appendChild(ifr);
+  });
+}
+async function runCommand(cmd,fromAgent){
+  if(!prefs.terminal.localSandbox&&!fromAgent)return{ok:false,output:'Sandbox commands are turned off in Settings.'};
+  const parts=cmd.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)||[];
+  const c=parts[0];
+  const args=parts.slice(1).map(a=>a.replace(/^["']|["']$/g,''));
+  const pth=norm(args[0]||'');
+  try{
+    if(c==='help')return{ok:true,output:'Commands:\n  ls [dir]       list directory\n  cat <file>     print file\n  tree           file tree with sizes\n  stat <file>    size and modified time\n  wc <file>      lines / words / chars\n  mkdir <dir>    create folder\n  touch <file>   create empty file\n  echo <text> > <file>   write a file\n  rm [-r] <path> delete\n  mv <a> <b>     move or rename\n  search <text>  find text in project\n  node <file.js> run JavaScript in an isolated frame\n  deploy         open the deploy panel\n  clear          clear the terminal'};
+    if(c==='ls'){
+      const base=pth?pth+'/':'';const seen={};const items=[];
+      Object.keys(files).forEach(k=>{
+        if(base&&k.indexOf(base)!==0)return;
+        const rest=base?k.slice(base.length):k;if(!rest)return;
+        const seg=rest.split('/');const name=seg.length===1?rest:seg[0]+'/';
+        if(!seen[name]){seen[name]=true;items.push(name)}
+      });
+      items.sort();
+      return{ok:true,output:items.length?items.join('\n'):'(empty)'};
+    }
+    if(c==='tree')return{ok:true,output:Object.keys(files).sort().map(k=>'  '+(k.endsWith('/')?k:k+'  '+fmtBytes(files[k].c.length))).join('\n')||'(no files)'};
+    if(c==='cat'){
+      if(!pth)return{ok:false,output:'cat: missing file'};
+      if(!files[pth])return{ok:false,output:'cat: '+pth+': no such file'};
+      return{ok:true,output:files[pth].c};
+    }
+    if(c==='stat'){
+      if(!files[pth])return{ok:false,output:'stat: no such file: '+(pth||'(none)')};
+      return{ok:true,output:pth+'\n  size: '+fmtBytes(files[pth].c.length)+'\n  modified: '+new Date(files[pth].u).toLocaleString()};
+    }
+    if(c==='wc'){
+      if(!files[pth])return{ok:false,output:'wc: no such file'};
+      const t=files[pth].c,w=t.match(/\S+/g);
+      return{ok:true,output:lineCount(t)+' lines  '+(w?w.length:0)+' words  '+t.length+' chars  '+pth};
+    }
+    if(c==='mkdir'){
+      if(!pth)return{ok:false,output:'mkdir: missing name'};
+      files[pth+'/']={c:'',u:Date.now()};saveFiles(cur.id,files);renderFiles();
+      return{ok:true,output:'created '+pth+'/'};
+    }
+    if(c==='touch'){
+      if(!pth)return{ok:false,output:'touch: missing name'};
+      if(!files[pth]){files[pth]={c:'',u:Date.now(),changed:true};saveFiles(cur.id,files);renderFiles()}
+      return{ok:true,output:'touched '+pth};
+    }
+    if(c==='echo'){
+      const m=cmd.match(/^echo\s+(.*?)\s*>\s*(\S+)$/);
+      if(m){
+        const p=norm(m[2]);
+        files[p]={c:m[1].replace(/^["']|["']$/g,'')+'\n',u:Date.now(),changed:true};
+        saveFiles(cur.id,files);renderFiles();maybeRefreshPreview();
+        return{ok:true,output:'wrote '+p};
+      }
+      return{ok:true,output:cmd.slice(5)};
+    }
+    if(c==='rm'){
+      let target='';
+      for(let i=0;i<args.length;i++){if(args[i].charAt(0)!=='-'){target=norm(args[i]);break}}
+      if(!target)return{ok:false,output:'rm: missing target'};
+      const dir=isDirPath(target);
+      if(!files[target]&&!dir)return{ok:false,output:'rm: no such path: '+target};
+      if(dir&&!args.some(a=>/^-\w*r/i.test(a)))return{ok:false,output:'rm: '+target+' is a folder — use rm -r'};
+      Object.keys(files).forEach(k=>{if(k===target||k===target+'/'||k.indexOf(target+'/')===0)delete files[k]});
+      saveFiles(cur.id,files);renderFiles();maybeRefreshPreview();
+      return{ok:true,output:'removed '+target};
+    }
+    if(c==='mv'){
+      const a=norm(args[0]||''),b=norm(args[1]||'');
+      if(!a||!b)return{ok:false,output:'mv: usage: mv <from> <to>'};
+      if(!files[a]&&!isDirPath(a))return{ok:false,output:'mv: no such path: '+a};
+      const moves=[];
+      Object.keys(files).forEach(k=>{
+        if(k===a)moves.push([k,b]);
+        else if(k===a+'/')moves.push([k,b+'/']);
+        else if(k.indexOf(a+'/')===0)moves.push([k,b+k.slice(a.length)]);
+      });
+      moves.forEach(mv=>{files[mv[1]]=files[mv[0]];delete files[mv[0]]});
+      saveFiles(cur.id,files);renderFiles();maybeRefreshPreview();
+      return{ok:true,output:'moved '+a+' → '+b};
+    }
+    if(c==='search'){
+      const q=args.join(' ');const hits=[];
+      if(!q)return{ok:false,output:'search: missing text'};
+      Object.keys(files).forEach(k=>{
+        if(k.endsWith('/'))return;
+        const ls=files[k].c.split('\n');
+        for(let i=0;i<ls.length;i++){if(ls[i].indexOf(q)>=0&&hits.length<40)hits.push(k+':'+(i+1)+': '+ls[i].trim().slice(0,110))}
+      });
+      return{ok:true,output:hits.join('\n')||'no matches'};
+    }
+    if(c==='node'){
+      if(!pth||!files[pth])return{ok:false,output:'node: file not found: '+(pth||'(none)')};
+      const out=await runJsSandbox(files[pth].c);
+      return{ok:!/(^|\n)Error: /.test(out),output:out||'(no output)'};
+    }
+    if(c==='deploy'){if(fromAgent)return{ok:false,output:'deploy must be started by the user'};closeDrawer();setTimeout(openDeploy,260);return{ok:true,output:'opening deploy panel…'}}
+    if(c==='clear'){const o=$('#termOut');if(o)o.innerHTML='';return{ok:true,output:''}}
+    if(c==='npm'||c==='npx'||c==='python'||c==='python3'||c==='git'||c==='pip')return{ok:false,output:c+': not available in the browser. Projects here are static HTML/CSS/JS.'};
+    return{ok:false,output:c+': command not found — type "help"'};
+  }catch(e){return{ok:false,output:'error: '+e.message}}
+}
+
+/* =====================================================================
+   AI PROVIDERS (GLM = OpenAI-style, Gemini = native streaming API)
+   ===================================================================== */
+function doFetch(url,headers,body,signal){
+  if(prefs.viaBackend&&prefs.backendUrl){
+    return fetch(prefs.backendUrl.replace(/\/$/,'')+'/api/proxy',{method:'POST',signal:signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url,headers:headers,body:body})});
+  }
+  return fetch(url,{method:'POST',signal:signal,headers:Object.assign({'Content-Type':'application/json'},headers),body:JSON.stringify(body)});
+}
+async function errText(res){
+  let t='';try{t=await res.text()}catch(e){}
+  let d=t.slice(0,300);
+  try{
+    const j=JSON.parse(t);
+    const e=j.error||(Array.isArray(j)&&j[0]&&j[0].error)||j;
+    d=String(e.message||e.code||JSON.stringify(e)).slice(0,300);
+  }catch(e){}
+  return 'HTTP '+res.status+' — '+(d||res.statusText);
+}
+async function readSSE(res,onJson){
+  if(!res.body||!res.body.getReader)throw new Error('This browser does not support response streaming');
+  const reader=res.body.getReader(),dec=new TextDecoder();
+  let buf='',raw='';
+  const handle=l0=>{
+    const l=l0.trim();
+    if(!l)return;
+    if(l.indexOf('data:')!==0){if(raw.length<400)raw+=l+' ';return}
+    const p=l.slice(5).trim();
+    if(!p||p==='[DONE]')return;
+    let j;try{j=JSON.parse(p)}catch(e){return}
+    onJson(j);
+  };
+  for(;;){
+    const r=await reader.read();
+    if(r.done)break;
+    buf+=dec.decode(r.value,{stream:true});
+    const lines=buf.split('\n');buf=lines.pop();
+    lines.forEach(handle);
+  }
+  if(buf)handle(buf);
+  return raw;
+}
+async function streamOpenAI(pv,m,sys,hist,signal,cb,state){
+  const messages=[{role:'system',content:sys}].concat(hist.map(h=>{
+    if(h.role==='user'&&h.imgs.length)return{role:'user',content:[{type:'text',text:h.text}].concat(h.imgs.map(u=>({type:'image_url',image_url:{url:u}})))};
+    return{role:h.role,content:h.text};
+  }));
+  const res=await doFetch(pv.endpoint,{Authorization:'Bearer '+pv.key},{model:m.id,messages:messages,stream:true,temperature:prefs.temperature,max_tokens:+prefs.maxTokens||16384},signal);
+  if(!res.ok)throw new Error(await errText(res));
+  state.raw=await readSSE(res,j=>{
+    if(j.error)throw new Error(String(j.error.message||JSON.stringify(j.error)));
+    const ch=j.choices&&j.choices[0];if(!ch)return;
+    const d=ch.delta||{};
+    if(d.reasoning_content)cb('think',d.reasoning_content);
+    if(d.content)cb('text',d.content);
+    if(ch.finish_reason==='length')state.truncated=true;
+  });
+}
+async function streamGemini(pv,m,sys,hist,signal,cb,state){
+  const url=pv.endpoint.replace(/\/$/,'')+'/models/'+encodeURIComponent(m.id)+':streamGenerateContent?alt=sse';
+  const contents=hist.map(h=>{
+    const parts=[{text:h.text}];
+    h.imgs.forEach(u=>{const mm=/^data:([^;]+);base64,(.*)$/.exec(u);if(mm)parts.push({inlineData:{mimeType:mm[1],data:mm[2]}})});
+    return{role:h.role==='assistant'?'model':'user',parts:parts};
+  });
+  const body={systemInstruction:{parts:[{text:sys}]},contents:contents,generationConfig:{temperature:prefs.temperature,maxOutputTokens:+prefs.maxTokens||16384}};
+  const res=await doFetch(url,{'x-goog-api-key':pv.key},body,signal);
+  if(!res.ok)throw new Error(await errText(res));
+  state.raw=await readSSE(res,j=>{
+    if(j.error)throw new Error(String(j.error.message||JSON.stringify(j.error)));
+    if(j.promptFeedback&&j.promptFeedback.blockReason)throw new Error('Gemini blocked the prompt: '+j.promptFeedback.blockReason);
+    const c=j.candidates&&j.candidates[0];if(!c)return;
+    ((c.content&&c.content.parts)||[]).forEach(p=>{
+      if(p.text){if(p.thought)cb('think',p.text);else cb('text',p.text)}
+    });
+    if(c.finishReason==='MAX_TOKENS')state.truncated=true;
+    else if(c.finishReason&&c.finishReason!=='STOP')state.finish=c.finishReason;
+  });
+}
+async function callModel(m,sys,hist,signal,cb){
+  const pv=provOf(m);
+  if(!pv.key)throw new Error('No '+providerLabel(m.provider)+' API key set. Open Settings and paste it.');
+  if(!m.id)throw new Error('The selected model has no ID. Set one in Settings.');
+  const state={raw:'',truncated:false,finish:''};
+  if(m.provider==='gemini')await streamGemini(pv,m,sys,hist,signal,cb,state);
+  else await streamOpenAI(pv,m,sys,hist,signal,cb,state);
+  return state;
+}
+function friendlyError(e,m){
+  let msg=(e&&e.message)||String(e);
+  if(/Failed to fetch|NetworkError|Load failed/i.test(msg))
+    msg='Could not reach '+providerLabel(m.provider)+' (network or CORS). Check your connection, or turn on "Route AI requests through the backend bridge" in Settings.';
+  else if(/HTTP 401|HTTP 403|API key|api_key|invalid.*key/i.test(msg))msg+='\nCheck that the '+providerLabel(m.provider)+' key is correct and active.';
+  else if(/HTTP 404|not found|does not exist/i.test(msg))msg+='\nThe model ID "'+m.id+'" may be wrong. Fix it in Settings → Models.';
+  return msg;
+}
+
+/* =====================================================================
+   CHAT + AGENT LOOP
+   ===================================================================== */
+$('#attachBtn').innerHTML=I('image');
+$('#sendBtn').innerHTML=I('send',17);
+$('#attachBtn').onclick=()=>$('#fileInput').click();
+function shrinkImage(dataUrl){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1280,r=Math.min(1,max/Math.max(img.width,img.height));
+      if(r===1&&dataUrl.length<700000)return res(dataUrl);
+      const c=document.createElement('canvas');c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>res(dataUrl);
+    img.src=dataUrl;
+  });
+}
+$('#fileInput').onchange=e=>{
+  Array.prototype.forEach.call(e.target.files,f=>{
+    if(!f.type||f.type.indexOf('image/')!==0){
+      if(f.size<200000)f.text().then(t=>{attachments.push({name:f.name,text:t.slice(0,12000),dataUrl:null});renderAttachStrip()});
+      else toast(f.name+': text files must be under 200 KB');
+      return;
+    }
+    if(f.size>8*1024*1024){toast(f.name+' is larger than 8 MB');return}
+    const r=new FileReader();
+    r.onload=()=>shrinkImage(r.result).then(u=>{attachments.push({name:f.name,dataUrl:u,text:null});renderAttachStrip()});
+    r.readAsDataURL(f);
+  });
+  e.target.value='';
+};
+function renderAttachStrip(){
+  $('#attachStrip').innerHTML=attachments.map((a,i)=>'<div class="att">'
+    +(a.dataUrl?'<img src="'+a.dataUrl+'" alt="">':'<div class="fbadge" style="width:56px;height:56px">TXT</div>')
+    +'<span class="fname">'+esc(a.name)+'</span><button class="rm" data-i="'+i+'" aria-label="Remove">'+I('x',11)+'</button></div>').join('');
+  document.querySelectorAll('#attachStrip .rm').forEach(b=>{b.onclick=()=>{attachments.splice(+b.dataset.i,1);renderAttachStrip()}});
+}
+$('#chatInput').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(140,e.target.scrollHeight)+'px'});
+$('#chatInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey&&!window.matchMedia('(pointer:coarse)').matches){e.preventDefault();sendMessage()}
+});
+function setSendIcon(){$('#sendBtn').innerHTML=agentBusy?I('stop',15):I('send',17)}
+$('#sendBtn').onclick=()=>{if(agentBusy)stopAgent(false);else sendMessage()};
+function chatEmptyHTML(){
+  const ok=hasKey();
+  return '<div class="chat-empty"><div style="width:52px;height:52px;margin:0 auto 14px;border:1px solid var(--line2);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--tx2)">'+I('terminal',22)+'</div>'
+    +'<h3>'+(ok?'Tell Xenom what to build':'Add an API key to start')+'</h3>'
+    +'<p>'+(ok?'Describe a feature, paste an error, or attach a screenshot. Xenom edits your files and checks the preview.':'Paste a GLM or Gemini key in Settings. Files, editor and preview work without one.')+'</p>'
+    +(ok?'<div class="sugg">'
+      +'<button data-s="Review my project files and suggest three concrete improvements.">Review my files</button>'
+      +'<button data-s="Add a polished dark mode toggle that remembers the choice, keeping the existing structure.">Add dark mode</button>'
+      +'<button data-s="Explain the structure of this project in five short bullets.">Explain the project</button>'
+      +'<button data-s="Build a contact form section with client-side validation.">Build a form</button></div>'
+      :'<button class="btn btn-p" id="chatAddKey">'+I('key',15)+'Add API key</button>')
+    +'</div>';
+}
+function renderChat(){
+  const sc=$('#chatScroll');
+  if(!chat.length){
+    sc.innerHTML=chatEmptyHTML();
+    sc.querySelectorAll('.sugg button').forEach(b=>{b.onclick=()=>{$('#chatInput').value=b.dataset.s;sendMessage()}});
+    const ak=$('#chatAddKey');if(ak)ak.onclick=()=>openSettings();
+    return;
+  }
+  sc.innerHTML='';
+  chat.forEach(m=>sc.appendChild(renderMsg(m)));
+  sc.scrollTop=sc.scrollHeight;
+}
+function paintCard(c,t){
+  c.querySelector('.tool-sq').className='tool-sq '+t.status;
+  c.querySelector('.tc-ic').innerHTML=t.status==='ok'?I('check',13):t.status==='err'?I('alert',13):I('clock',13);
+  c.querySelector('.tool-out').textContent=t.output||(t.status==='run'?'running…':'(no output)');
+}
+function toolCardEl(t,open){
+  const c=document.createElement('div');c.className='toolcard'+(open?' open':'');
+  c.innerHTML='<div class="toolcard-head"><span class="tool-sq"></span><span class="mlabel">'+esc(t.label)+'</span><span class="tc-ic" style="color:var(--tx3)"></span></div><div class="tool-out"></div>';
+  paintCard(c,t);
+  return c;
+}
+function renderMsg(m){
+  const d=document.createElement('div');
+  d.className='msg '+(m.role==='user'?'msg-user':'msg-agent');
+  if(m.role==='user'){
+    d.innerHTML='<div class="msg-body">'+esc(m.text||'')+'</div>';
+    if(m.attachments&&m.attachments.length){
+      d.innerHTML+='<div class="attach-grid">'+m.attachments.map(a=>a.dataUrl?'<img src="'+a.dataUrl+'" alt="'+esc(a.name)+'">':'<span class="chip">'+esc(a.name)+'</span>').join('')+'</div>';
+    }
+  }else{
+    const body=md(visibleText(m.text||''));
+    d.innerHTML='<div class="who"><b>XENOM</b><span class="mlabel">'+(m.model?esc(m.model):'')+'</span></div>'+(body?'<div class="msg-body">'+body+'</div>':'');
+    (m.tools||[]).forEach(t=>d.appendChild(toolCardEl(t,t.status==='err')));
+  }
+  return d;
+}
+function liveMsgEl(){
+  const d=document.createElement('div');d.className='msg msg-agent';
+  d.innerHTML='<div class="who"><b>XENOM</b></div><div class="msg-body"><div class="typing"><i></i><i></i><i></i></div></div>';
+  return d;
+}
+function paintLive(live,full,think){
+  const vis=visibleText(full);
+  live.querySelector('.msg-body').innerHTML=vis?md(vis):(think?'<div class="think">Thinking… '+think.length+' chars</div>':'<div class="typing"><i></i><i></i><i></i></div>');
+}
+function setStep(txt){
+  const si=$('#stepInd');
+  if(!txt){si.style.display='none';return}
+  si.style.display='flex';
+  si.innerHTML='<span class="tool-sq run"></span><span>'+esc(txt)+'</span>';
+}
+function nearBottom(el){return el.scrollHeight-el.scrollTop-el.clientHeight<160}
+function scrollEnd(force){const sc=$('#chatScroll');if(force||nearBottom(sc))sc.scrollTop=sc.scrollHeight}
+function stopAgent(silent){
+  runId++;
+  if(agentAbort)agentAbort.abort();
+  agentBusy=false;setStep(null);setSendIcon();
+  if(!silent)toast('Stopped');
+}
+function sendMessage(){
+  const inp=$('#chatInput');
+  const text=inp.value.trim();
+  if(!text&&!attachments.length)return;
+  if(agentBusy){toast('Xenom is still working — stop it first');return}
+  const m=curModel();
+  if(!m||!m.id){openSettings();toast('Select or add a model first');return}
+  if(!provOf(m).key){openSettings();toast('Add your '+providerLabel(m.provider)+' API key first');return}
+  if(attachments.some(a=>a.dataUrl)&&!m.vision){toast('"'+m.id+'" is not marked as vision-capable. Switch model or enable the eye icon in Settings.');return}
+  const msg={role:'user',text:text,attachments:attachments.map(a=>({name:a.name,dataUrl:a.dataUrl,text:a.text})),ts:Date.now()};
+  if(!chat.length)$('#chatScroll').innerHTML='';
+  chat.push(msg);
+  inp.value='';inp.style.height='auto';
+  attachments=[];renderAttachStrip();
+  $('#chatScroll').appendChild(renderMsg(msg));scrollEnd(true);
+  saveChat(cur.id,chat);
+  runAgentLoop().catch(e=>{console.error(e);toast('Agent error: '+(e.message||e))});
+}
+
+/* ----- agent prompt, tool protocol ----- */
+function systemPrompt(){
+  const keys=fileKeys();
+  const total=keys.reduce((n,k)=>n+files[k].c.length,0);
+  const lines=[
+    'You are Xenom, an autonomous coding agent inside a browser IDE with a REAL project filesystem. You act by emitting tool tags in your reply; the app executes them and returns the results in the next message.',
+    '',
+    'PROJECT: "'+cur.name+'" (type: '+cur.type+')'
+  ];
+  if(cur.desc)lines.push('GOAL: '+cur.desc);
+  lines.push('','FILES:');
+  keys.forEach(k=>lines.push('- '+k+' ('+fmtBytes(files[k].c.length)+', '+lineCount(files[k].c)+' lines)'));
+  if(!keys.length)lines.push('- (empty project)');
+  if(total<=16000&&keys.length){
+    lines.push('','CURRENT FILE CONTENTS (always up to date):');
+    keys.forEach(k=>lines.push('<<< '+k+' >>>',files[k].c,'<<< end '+k+' >>>'));
+  }
+  const errs=uniqErrors(previewErrors).slice(-6);
+  if(errs.length)lines.push('','LIVE PREVIEW ERRORS RIGHT NOW:',errs.map(e=>'- '+e).join('\n'));
+  lines.push(
+    '',
+    'TOOLS (write them exactly like this, outside code fences; several per reply are fine):',
+    '<xenom:write path="index.html">',
+    '...complete file content...',
+    '</xenom:write>',
+    '<xenom:edit path="script.js">',
+    '<find>exact existing text (must appear exactly once)</find>',
+    '<replace>new text</replace>',
+    '</xenom:edit>',
+    '<xenom:read path="script.js" from="1" to="120"/>   (from/to optional)',
+    '<xenom:list/>',
+    '<xenom:delete path="old.js"/>',
+    '<xenom:rename from="a.js" to="b.js"/>',
+    '<xenom:search>text to find</xenom:search>',
+    '<xenom:run>ls</xenom:run>   (sandbox: ls cat tree stat wc mkdir touch rm mv echo search node file.js)',
+    '<xenom:check/>   (checks JS syntax and local file references, then loads the preview and reports runtime errors)',
+    '<xenom:finish>one or two factual sentences about what changed</xenom:finish>',
+    '',
+    'RULES:',
+    '1. For a task: give a short plan (max 4 bullets), then act. No long explanations; never repeat file contents in prose.',
+    '2. Use <xenom:edit> for targeted changes to existing files and <xenom:write> for new files or full rewrites. A write must contain the COMPLETE final file — never placeholders, ellipses, "rest unchanged", or bracketed notes. Older messages may show omitted bodies like "[… chars written …]"; never copy that.',
+    '3. Do not edit a file you have not seen. Contents of small projects are shown above; otherwise <xenom:read> first. Large files are truncated when read — use from/to to see the rest before editing.',
+    '4. Preserve the existing structure and working behavior unless the user asks for a rewrite.',
+    '5. The project is static HTML, CSS and vanilla JavaScript with relative paths and no build step. You cannot create binary files: use inline SVG or CSS for graphics. CDN <script> and font links are fine. In the preview sandbox localStorage is an in-memory shim.',
+    '6. Build polished, modern, responsive UI with real content, accessible markup and sensible mobile layout.',
+    '7. After making changes run <xenom:check/>, fix every reported issue, then call <xenom:finish>. If the user only asks a question, answer in plain text with no tools.'
+  );
+  return lines.join('\n');
+}
+function visibleText(t){
+  t=String(t||'');
+  t=t.replace(/<xenom:(\w+)((?:\s+[\w-]+="[^"]*")*)\s*(?:\/>|>[\s\S]*?<\/xenom:\1>)/g,'');
+  t=t.replace(/<xenom:(\w+)((?:\s+[\w-]+="[^"]*")*)\s*>[\s\S]*$/,(m,n,a)=>{const p=/path="([^"]*)"/.exec(a);return '\n`'+n+(p?' '+p[1]:'')+' …`'});
+  t=t.replace(/<xenom:[^>]*$/,'');
+  return t.trim();
+}
+function parseTools(text){
+  const calls=[];
+  const re=/<xenom:(\w+)((?:\s+[\w-]+="[^"]*")*)\s*(?:\/>|>([\s\S]*?)<\/xenom:\1>)/g;
+  let m;
+  while((m=re.exec(text))){
+    const a={};const ar=/([\w-]+)="([^"]*)"/g;let x;
+    while((x=ar.exec(m[2])))a[x[1]]=x[2].replace(/&quot;/g,'"').replace(/&amp;/g,'&');
+    calls.push({name:m[1],attrs:a,body:m[3]===undefined?'':m[3]});
+  }
+  const opens=(text.match(/<xenom:(?:write|edit)\b/g)||[]).length;
+  const got=calls.filter(c=>c.name==='write'||c.name==='edit').length;
+  if(opens>got)calls.push({name:'__truncated',attrs:{},body:''});
+  return calls;
+}
+function cleanBody(b){
+  b=b.replace(/^\r?\n/,'').replace(/\r?\n$/,'');
+  const f=/^```[\w-]*\r?\n([\s\S]*?)\r?\n```\s*$/.exec(b);
+  return f?f[1]:b;
+}
+function toolLabel(c){
+  const a=c.attrs||{};
+  if(c.name==='__truncated')return 'incomplete tool call';
+  let s=c.name;
+  if(a.path)s+=' '+a.path;else if(a.from)s+=' '+a.from+(a.to?' → '+a.to:'');
+  if(c.name==='run'||c.name==='search')s+=' '+c.body.trim().slice(0,60);
+  return s;
+}
+function compactText(t){
+  return String(t||'')
+    .replace(/(<xenom:write\s+path="[^"]*">)([\s\S]*?)(<\/xenom:write>)/g,(m,a,b,c)=>a+'\n[… '+b.length+' chars written — use read to view current content …]\n'+c)
+    .replace(/(<xenom:edit\b[^>]*>)([\s\S]*?)(<\/xenom:edit>)/g,(m,a,b,c)=>a+'[… edit applied …]'+c);
+}
+function neutralHistory(){
+  const out=[];
+  const src=chat.filter(m=>!m.error).slice(-40);
+  const lastAgent=src.map(m=>m.role).lastIndexOf('agent');
+  const push=(role,text,imgs)=>{
+    const last=out[out.length-1];
+    if(last&&last.role===role){last.text+='\n\n'+text;last.imgs=last.imgs.concat(imgs||[])}
+    else out.push({role:role,text:text,imgs:imgs||[]});
+  };
+  src.forEach((m,i)=>{
+    if(m.role==='user'){
+      let t=m.text||'';
+      (m.attachments||[]).filter(a=>a.text).forEach(a=>{t+='\n\n[Attached file '+a.name+']\n'+a.text});
+      push('user',t||'(see attached image)',(m.attachments||[]).filter(a=>a.dataUrl).map(a=>a.dataUrl));
+    }else{
+      const recent=i===lastAgent;
+      push('assistant',(recent?m.text:compactText(m.text))||'(no text)');
+      const done=(m.tools||[]).filter(t=>t.status!=='run');
+      if(done.length){
+        push('user','TOOL RESULTS\n'+done.map(t=>'['+t.label+'] '+(t.status==='ok'?'OK':'ERROR')+'\n'+(recent?String(t.output||''):String(t.output||'').slice(0,500))).join('\n\n')
+          +'\n\nContinue. When all work is done: run check, fix any issues, then finish.');
+      }
+    }
+  });
+  while(out.length&&out[0].role!=='user')out.shift();
+  let lastImg=-1;out.forEach((h,i)=>{if(h.imgs.length)lastImg=i});
+  const vision=curModel().vision;
+  out.forEach((h,i)=>{if(i!==lastImg||!vision)h.imgs=[]});
+  return out;
+}
+const PLACEHOLDER=/\[…\s*\d+\s*chars written|rest of (the )?(file|code)\b|(remains?|stays?) (the same|unchanged)|existing (code|content) (here|unchanged)|\.\.\.\s*(rest|unchanged|existing)\b|<!--\s*\.\.\.\s*-->/i;
+function validPath(p){return p&&p.indexOf('..')<0&&!/^[a-z]+:/i.test(p)&&p.length<200}
+async function execTool(call){
+  const a=call.attrs||{},n=call.name;
+  if(n==='__truncated')return{ok:false,output:'Your reply was cut off inside a write/edit block, so nothing was applied. Use smaller files, or split the work with several <xenom:write> blocks and <xenom:edit> patches.'};
+  if(n==='list')return{ok:true,output:fileKeys().map(k=>k+' ('+fmtBytes(files[k].c.length)+', '+lineCount(files[k].c)+' lines)').join('\n')||'(no files)'};
+  if(n==='read'){
+    const p=norm(a.path);
+    if(!p||!files[p])return{ok:false,output:'ERROR: file not found: '+p+'\nExisting files: '+fileKeys().join(', ')};
+    let t=files[p].c;const total=lineCount(t);
+    if(a.from||a.to){
+      const f=Math.max(1,+a.from||1),e=Math.min(total,+a.to||total);
+      return{ok:true,output:'--- '+p+' lines '+f+'-'+e+' of '+total+' ---\n'+t.split('\n').slice(f-1,e).join('\n')};
+    }
+    let note='';
+    if(t.length>60000){t=t.slice(0,60000);note='\n[TRUNCATED at 60000 chars of '+files[p].c.length+' — read the rest with from/to before editing]'}
+    return{ok:true,output:'--- '+p+' ('+total+' lines) ---\n'+t+note};
+  }
+  if(n==='write'){
+    const p=norm(a.path);
+    if(!validPath(p))return{ok:false,output:'ERROR: invalid path "'+(a.path||'')+'"'};
+    const content=cleanBody(call.body);
+    if(!content.trim())return{ok:false,output:'ERROR: empty content for '+p};
+    if(PLACEHOLDER.test(content))return{ok:false,output:'ERROR: '+p+' was NOT written because it contains a placeholder instead of real code. Write the complete file, or use <xenom:edit> for a small change.'};
+    const old=files[p],isNew=!old;
+    files[p]={c:content,u:Date.now(),changed:true};
+    saveFiles(cur.id,files);
+    if(editingPath===p){$('#edInput').value=content;edDirty=false;$('#edSave').classList.remove('dirty');updateEd()}
+    renderFiles();maybeRefreshPreview();
+    let o=(isNew?'CREATED ':'OVERWROTE ')+p+' — '+fmtBytes(content.length)+', '+lineCount(content)+' lines';
+    if(old&&old.c.length>800&&content.length<old.c.length*0.4)o+='\nWARNING: file shrank from '+fmtBytes(old.c.length)+' — verify nothing was lost.';
+    return{ok:true,output:o,wrote:true};
+  }
+  if(n==='edit'){
+    const p=norm(a.path);
+    if(!p||!files[p])return{ok:false,output:'ERROR: file not found: '+p};
+    const re=/<find>([\s\S]*?)<\/find>\s*<replace>([\s\S]*?)<\/replace>/g;
+    const pairs=[];let m;
+    while((m=re.exec(call.body)))pairs.push([m[1].replace(/^\r?\n/,'').replace(/\r?\n$/,''),m[2].replace(/^\r?\n/,'').replace(/\r?\n$/,'')]);
+    if(!pairs.length)return{ok:false,output:'ERROR: no <find>/<replace> pairs found in the edit block'};
+    let t=files[p].c;
+    for(let i=0;i<pairs.length;i++){
+      const f=pairs[i][0];
+      if(!f)return{ok:false,output:'ERROR: edit #'+(i+1)+' has an empty <find>'};
+      const cnt=t.split(f).length-1;
+      if(cnt===0)return{ok:false,output:'ERROR: edit #'+(i+1)+' — text not found in '+p+'. It must match exactly, including whitespace. Nothing was changed; read the file and retry.'};
+      if(cnt>1)return{ok:false,output:'ERROR: edit #'+(i+1)+' — text matches '+cnt+' places in '+p+'. Include more surrounding lines so it is unique. Nothing was changed.'};
+      if(PLACEHOLDER.test(pairs[i][1]))return{ok:false,output:'ERROR: edit #'+(i+1)+' contains a placeholder. Nothing was changed.'};
+      t=t.replace(f,()=>pairs[i][1]);
+    }
+    files[p]={c:t,u:Date.now(),changed:true};
+    saveFiles(cur.id,files);
+    if(editingPath===p){$('#edInput').value=t;edDirty=false;$('#edSave').classList.remove('dirty');updateEd()}
+    renderFiles();maybeRefreshPreview();
+    return{ok:true,output:'EDITED '+p+' — '+pairs.length+' change'+(pairs.length>1?'s':'')+' applied',wrote:true};
+  }
+  if(n==='delete'){
+    const p=norm(a.path);
+    if(!p)return{ok:false,output:'ERROR: missing path'};
+    const dir=isDirPath(p);
+    if(!files[p]&&!dir)return{ok:false,output:'ERROR: not found: '+p};
+    removePath(p,false);
+    if(dir){Object.keys(files).forEach(k=>{if(k===p+'/'||k.indexOf(p+'/')===0)delete files[k]})}
+    saveFiles(cur.id,files);
+    if(editingPath&&(editingPath===p||editingPath.indexOf(p+'/')===0))closeEditor(true);
+    renderFiles();maybeRefreshPreview();
+    return{ok:true,output:'DELETED '+p,wrote:true};
+  }
+  if(n==='rename'){
+    const f=norm(a.from),t=norm(a.to);
+    if(!f||!t)return{ok:false,output:'ERROR: rename needs from and to'};
+    if(!validPath(t))return{ok:false,output:'ERROR: invalid target path'};
+    if(!files[f])return{ok:false,output:'ERROR: not found: '+f};
+    if(files[t])return{ok:false,output:'ERROR: target already exists: '+t};
+    files[t]=Object.assign({},files[f],{u:Date.now(),changed:true});delete files[f];
+    saveFiles(cur.id,files);renderFiles();maybeRefreshPreview();
+    return{ok:true,output:'RENAMED '+f+' → '+t+'\nNOTE: update any references to the old name.',wrote:true};
+  }
+  if(n==='search'){
+    const q=call.body.trim()||a.query||'';
+    if(!q)return{ok:false,output:'ERROR: empty search'};
+    const hits=[];
+    fileKeys().forEach(k=>{
+      const ls=files[k].c.split('\n');
+      for(let i=0;i<ls.length;i++){if(ls[i].indexOf(q)>=0&&hits.length<40)hits.push(k+':'+(i+1)+': '+ls[i].trim().slice(0,120))}
+    });
+    return{ok:true,output:hits.join('\n')||'No matches for "'+q+'"'};
+  }
+  if(n==='run')return runCommand(call.body.trim()||a.command||'',true);
+  if(n==='check'){const r=await runCheck();return{ok:r.clean,output:r.output,clean:r.clean,checked:true}}
+  if(n==='finish')return{ok:true,output:'Done: '+(call.body.trim()||a.summary||'')};
+  return{ok:false,output:'Unknown tool "'+n+'". Valid: write, edit, read, list, delete, rename, search, run, check, finish.'};
+}
+async function runAgentLoop(){
+  const my=++runId;
+  agentBusy=true;setSendIcon();
+  const sc=$('#chatScroll');
+  const maxSteps=Math.max(1,Math.min(20,+prefs.maxSteps||10));
+  let wroteSinceCheck=false,ended=false,autoChecks=0;
+  try{
+    for(let step=1;step<=maxSteps;step++){
+      if(my!==runId)return;
+      setStep('Step '+step+'/'+maxSteps+' · thinking');
+      const live=liveMsgEl();sc.appendChild(live);scrollEnd(true);
+      const ab=new AbortController();agentAbort=ab;
+      const to=setTimeout(()=>ab.abort(),240000);
+      const model=curModel();
+      let full='',think='',failed=null,lastPaint=0,st={truncated:false,finish:'',raw:''};
+      try{
+        st=await callModel(model,systemPrompt(),neutralHistory(),ab.signal,(k,t)=>{
+          if(k==='think')think+=t;else full+=t;
+          const now=Date.now();
+          if(now-lastPaint>90){
+            lastPaint=now;paintLive(live,full,think);scrollEnd();
+            const w=/<xenom:(write|edit)\s+path="([^"]*)"[^>]*>(?![\s\S]*<\/xenom:\1>)/.exec(full);
+            setStep('Step '+step+'/'+maxSteps+' · '+(w?(w[1]==='write'?'writing ':'editing ')+w[2]:(full?'responding':'thinking')));
+          }
+        });
+      }catch(e){
+        failed=(ab.signal.aborted&&my===runId)?'The request timed out after 4 minutes.':friendlyError(e,model);
+      }
+      clearTimeout(to);
+      live.remove();
+      if(my!==runId){
+        if(full.trim()){const pm={role:'agent',text:visibleText(full)+'\n\n_(stopped)_',tools:[],ts:Date.now(),model:model.id,error:true};chat.push(pm);sc.appendChild(renderMsg(pm))}
+        saveChat(cur.id,chat);return;
+      }
+      if(failed){
+        const em={role:'agent',text:'**Stopped.** '+failed+'\n\nNothing was changed in this step.',tools:[],ts:Date.now(),model:model.id,error:true};
+        chat.push(em);sc.appendChild(renderMsg(em));scrollEnd(true);saveChat(cur.id,chat);return;
+      }
+      if(!full.trim()){
+        const why=st.raw?('Provider said: '+st.raw.slice(0,300)):(st.finish?('Finish reason: '+st.finish):'No text came back.');
+        const em={role:'agent',text:'**Empty response from "'+model.id+'".** '+why+'\n\nCheck the model ID in Settings, or try another model.',tools:[],ts:Date.now(),model:model.id,error:true};
+        chat.push(em);sc.appendChild(renderMsg(em));scrollEnd(true);saveChat(cur.id,chat);return;
+      }
+      if(st.truncated)full+='\n';
+      const calls=parseTools(full);
+      const m={role:'agent',text:full,tools:[],ts:Date.now(),model:model.id};
+      chat.push(m);
+      const el=renderMsg(m);sc.appendChild(el);scrollEnd(true);
+      if(!calls.length){ended=true;break}
+      let finishCalled=false;
+      for(let ci=0;ci<calls.length;ci++){
+        if(my!==runId){saveChat(cur.id,chat);return}
+        const call=calls[ci];
+        const rec={name:call.name,label:toolLabel(call),status:'run',output:''};
+        m.tools.push(rec);
+        const card=toolCardEl(rec,false);el.appendChild(card);scrollEnd();
+        setStep('Step '+step+'/'+maxSteps+' · '+rec.label);
+        await sleep(30);
+        let r;
+        try{r=await execTool(call)}catch(e){r={ok:false,output:'ERROR: '+(e.message||e)}}
+        rec.status=r.ok?'ok':'err';rec.output=r.output;
+        if(r.wrote)wroteSinceCheck=true;
+        if(r.checked)wroteSinceCheck=false;
+        if(call.name==='finish')finishCalled=true;
+        paintCard(card,rec);
+        card.classList.toggle('open',!r.ok);
+        scrollEnd();
+      }
+      saveChat(cur.id,chat);
+      if(finishCalled){
+        if(wroteSinceCheck&&autoChecks<2&&step<maxSteps&&my===runId){
+          autoChecks++;
+          setStep('Step '+step+'/'+maxSteps+' · verifying');
+          const rec={name:'check',label:'check (automatic)',status:'run',output:''};
+          m.tools.push(rec);
+          const card=toolCardEl(rec,false);el.appendChild(card);
+          const r=await runCheck();
+          rec.status=r.clean?'ok':'err';rec.output=r.output;wroteSinceCheck=false;
+          paintCard(card,rec);card.classList.toggle('open',!r.clean);scrollEnd();
+          saveChat(cur.id,chat);
+          if(!r.clean)continue;
+        }
+        ended=true;break;
+      }
+    }
+    if(!ended&&my===runId){
+      const m={role:'agent',text:'_Reached the step limit ('+maxSteps+'). Send "continue" to keep going, or raise the limit in Settings._',tools:[],ts:Date.now(),error:true};
+      chat.push(m);sc.appendChild(renderMsg(m));scrollEnd(true);
+    }
+  }finally{
+    if(my===runId){agentBusy=false;setStep(null);setSendIcon()}
+    if(cur){saveChat(cur.id,chat);cur.updatedAt=Date.now();saveProjects()}
+  }
+}
+
+/* =====================================================================
+   DEPLOYMENT
+   ===================================================================== */
+function openDeploy(){
+  openDrawer('Deploy · '+cur.name);
+  const dp=cur.deploy||{},def=prefs.deployDefaults||{};
+  const pick=(a,b)=>(a===undefined||a===null||a==='')?b:a;
+  let st=dp.state||'READY';if(st==='DEPLOYING'&&!deploying)st='READY';
+  let html='<div class="deploy-states">'+['READY','DEPLOYING','SUCCESS','FAILED'].map(s=>'<div class="dstate '+(st===s?'cur':'')+'">'+s.charAt(0)+s.slice(1).toLowerCase()+'</div>').join('')+'</div>';
+  if(dp.url)html+='<div class="urlbox">'+I('globe',15)+'<span style="flex:1">'+esc(dp.url)+'</span><a href="'+esc(dp.url)+'" target="_blank" rel="noopener" class="iconbtn" aria-label="Open site">'+I('ext',15)+'</a></div>';
+  if(dp.lastDeploy)html+='<div class="statusline">'+I('clock',13)+'Last deploy '+new Date(dp.lastDeploy).toLocaleString()+'</div>';
+  html+=`
+    <div class="form-sec"><span class="sec-t">Server (cPanel FTP)</span>
+      <div class="grid2">
+        <div class="field"><label class="mlabel">Host</label><input id="dpHost" value="${esc(pick(dp.host,def.host))}" placeholder="ftp.yourdomain.com" autocapitalize="off"></div>
+        <div class="field"><label class="mlabel">Port</label><input id="dpPort" value="${esc(pick(dp.port,def.port))}" inputmode="numeric"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="mlabel">FTP username</label><input id="dpUser" value="${esc(pick(dp.username,def.username))}" autocomplete="off" autocapitalize="off"></div>
+        <div class="field"><label class="mlabel">FTP password</label><div class="pw-wrap"><input id="dpPass" type="password" value="${esc(pick(dp.password,def.password))}" autocomplete="off"><button class="iconbtn" id="dpEye" aria-label="Show password">${I('eye',16)}</button></div></div>
+      </div>
+      <div class="field"><label class="mlabel">Remote folder for this project</label><input id="dpDir" value="${esc(dp.remoteDir||((def.remoteRoot||'/public_html').replace(/\/+$/,'')+'/'+slug(cur.name)))}" autocapitalize="off"><div class="hint">Each project uploads into its own folder under your hosting root.</div></div>
+      <div class="field"><label class="mlabel">Live domain (to build the final URL)</label><input id="dpDomain" value="${esc(pick(dp.domain,def.domain))}" placeholder="https://yourdomain.com" autocapitalize="off"></div>
+      <label style="display:flex;gap:9px;align-items:center;font-size:13.5px;color:var(--tx2)"><input type="checkbox" id="dpSecure" ${pick(dp.secure,def.secure)?'checked':''}> Use FTPS (explicit TLS)</label>
+    </div>
+    <div class="form-sec"><span class="sec-t">MySQL database (optional)</span>
+      <div class="grid2">
+        <div class="field"><label class="mlabel">DB host</label><input id="dbH" value="${esc((dp.db&&dp.db.host)||'localhost')}" autocapitalize="off"></div>
+        <div class="field"><label class="mlabel">DB name</label><input id="dbN" value="${esc((dp.db&&dp.db.name)||'')}" autocapitalize="off"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label class="mlabel">DB user</label><input id="dbU" value="${esc((dp.db&&dp.db.user)||'')}" autocomplete="off" autocapitalize="off"></div>
+        <div class="field"><label class="mlabel">DB password</label><input id="dbP" type="password" value="${esc((dp.db&&dp.db.pass)||'')}" autocomplete="off"></div>
+      </div>
+      <div class="hint">Needs the optional mysql2 package on the backend and a host that allows remote MySQL. Many cPanel hosts only allow creating databases inside cPanel — leave this empty if so.</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" id="dpTest" style="flex:1">${I('server',15)}Test connection</button>
+      <button class="btn btn-p" id="dpGo" style="flex:1">${I('upload',15)}Deploy</button>
+    </div>
+    <div class="statusline" id="dpStatus"></div>
+    <span class="mlabel" style="display:block;margin:12px 0 8px">Deployment log</span>
+    <div class="deplog" id="dpLog">${dp.log?esc(dp.log):'No deployment yet.'+(prefs.backendUrl?'':'\n\nBackend bridge is not set. Browsers cannot open FTP connections, so a small Node service on your computer does the upload. Get it below.')}</div>
+    <button class="btn" id="dpBackend" style="width:100%;margin-top:12px">${I('download',15)}Get the backend bridge (xenom-backend.js)</button>
+    <p class="hint">A deploy only counts as successful after the backend re-checks every uploaded file on the server.</p>`;
+  $('#drawerBody').innerHTML=html;
+  $('#dpEye').onclick=()=>{const i=$('#dpPass');i.type=i.type==='password'?'text':'password';$('#dpEye').innerHTML=I(i.type==='password'?'eye':'eyeOff',16)};
+  $('#dpBackend').onclick=showBackendSetup;
+  $('#dpTest').onclick=async()=>{
+    const s=$('#dpStatus');
+    if(!prefs.backendUrl){s.textContent='Set the backend URL in Settings first.';return}
+    s.textContent='Testing…';
+    try{
+      const r=await fetch(prefs.backendUrl.replace(/\/$/,'')+'/api/test-connection',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(dpTarget())});
+      const j=await r.json();
+      s.textContent=j.ok?('Connected — '+j.entries+' entries in the FTP root'):('Failed — '+j.error);
+    }catch(e){s.textContent='Backend unreachable — '+e.message}
+  };
+  $('#dpGo').onclick=()=>{
+    cur.deploy=dpSave();saveProjects();
+    if(!prefs.backendUrl){
+      cur.deploy.state='FAILED';
+      cur.deploy.log=(cur.deploy.log||'')+'\n[FAIL] No backend bridge configured. Run xenom-backend.js and set its URL in Settings.';
+      saveProjects();openDeploy();return;
+    }
+    if(!cur.deploy.host||!cur.deploy.username){toast('Enter the FTP host and username');return}
+    confirmDlg('Deploy to '+cur.deploy.host,'Files will be uploaded to '+cur.deploy.remoteDir+'. Existing files with the same names will be overwritten.','Deploy now',()=>runDeployment());
+  };
+}
+function dpTarget(){
+  return{host:$('#dpHost').value.trim(),port:$('#dpPort').value.trim(),username:$('#dpUser').value.trim(),password:$('#dpPass').value,secure:$('#dpSecure').checked,remoteDir:$('#dpDir').value.trim()||'/public_html',domain:$('#dpDomain').value.trim()};
+}
+function dpSave(){
+  const t=dpTarget();
+  return Object.assign({},t,{state:(cur.deploy&&cur.deploy.state)||'READY',lastDeploy:cur.deploy&&cur.deploy.lastDeploy,url:cur.deploy&&cur.deploy.url,log:cur.deploy&&cur.deploy.log,
+    db:{host:$('#dbH').value.trim()||'localhost',name:$('#dbN').value.trim(),user:$('#dbU').value.trim(),pass:$('#dbP').value}});
+}
+async function runDeployment(){
+  deploying=true;
+  cur.deploy=dpSave();cur.deploy.state='DEPLOYING';
+  cur.deploy.log='['+new Date().toLocaleTimeString()+'] Deployment started — '+fileKeys().length+' files\n';
+  saveProjects();openDeploy();
+  const dlog=line=>{
+    cur.deploy.log+=line+'\n';
+    const log=$('#dpLog');if(log){log.textContent=cur.deploy.log;log.scrollTop=log.scrollHeight}
+  };
+  let succeeded=false;
+  try{
+    const fl={};fileKeys().forEach(k=>{fl[k]=files[k].c});
+    const d=cur.deploy;
+    const payload={project:{name:cur.name,slug:slug(cur.name)},target:{host:d.host,port:d.port,username:d.username,password:d.password,secure:d.secure,remoteDir:d.remoteDir,domain:d.domain,db:d.db},files:fl};
+    const res=await fetch(prefs.backendUrl.replace(/\/$/,'')+'/api/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok)throw new Error('backend HTTP '+res.status);
+    if(!res.body||!res.body.getReader)throw new Error('backend returned no stream');
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf='';
+    const handle=l=>{
+      if(!l.trim())return;
+      try{
+        const j=JSON.parse(l);
+        if(j.type==='info')dlog('[INFO] '+j.msg);
+        else if(j.type==='upload')dlog('[UP]   '+j.msg);
+        else if(j.type==='error')dlog('[FAIL] '+j.msg);
+        else if(j.type==='done'){
+          if(j.ok){succeeded=true;cur.deploy.url=j.url||'';dlog('[OK]   Upload verified on the server'+(j.url?' — '+j.url:''))}
+          else dlog('[FAIL] '+(j.msg||'deployment failed'));
+        }
+      }catch(e){dlog(l)}
+    };
+    for(;;){
+      const rd=await reader.read();
+      if(rd.done)break;
+      buf+=dec.decode(rd.value,{stream:true});
+      const lines=buf.split('\n');buf=lines.pop();
+      lines.forEach(handle);
+    }
+    if(buf)handle(buf);
+    cur.deploy.state=succeeded?'SUCCESS':'FAILED';
+  }catch(e){
+    cur.deploy.state='FAILED';
+    dlog('[FAIL] '+e.message+' — deployment did not complete.');
+  }
+  cur.deploy.lastDeploy=Date.now();
+  deploying=false;
+  saveProjects();openDeploy();
+}
+const BACKEND_SRC=String.raw`// xenom-backend.js — local bridge for Xenom (FTP deploy, connection test, AI proxy)
+// Setup:  npm init -y && npm install express basic-ftp        (optional: npm install mysql2)
+// Run:    node xenom-backend.js     (Node 18+)  ->  http://localhost:8787
+// Then put http://localhost:8787 in Xenom -> Settings -> Backend bridge.
+const express = require("express");
+const ftp = require("basic-ftp");
+const { Readable } = require("stream");
+
+const app = express();
+app.use(express.json({ limit: "80mb" }));
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Private-Network", "true");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
+app.get("/api/health", function (req, res) { res.json({ ok: true, service: "xenom-backend" }); });
+
+function ftpOpts(t) {
+  return {
+    host: t.host, port: +t.port || 21, user: t.username, password: t.password,
+    secure: !!t.secure, secureOptions: { rejectUnauthorized: false }
+  };
+}
+
+app.post("/api/test-connection", async function (req, res) {
+  const t = req.body || {};
+  const client = new ftp.Client(15000);
+  try {
+    await client.access(ftpOpts(t));
+    const list = await client.list("/");
+    res.json({ ok: true, entries: list.length });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: String(e.message || e) });
+  } finally { client.close(); }
+});
+
+app.post("/api/deploy", async function (req, res) {
+  const body = req.body || {};
+  const project = body.project || {}, target = body.target || {}, files = body.files || {};
+  res.writeHead(200, { "Content-Type": "application/x-ndjson", "Cache-Control": "no-cache", "Access-Control-Allow-Origin": "*" });
+  const w = function (o) { res.write(JSON.stringify(o) + "\n"); };
+  const client = new ftp.Client(30000);
+  try {
+    if (!target.host) throw new Error("Missing FTP host");
+    w({ type: "info", msg: "Deploying " + (project.name || "project") });
+    await client.access(ftpOpts(target));
+    w({ type: "info", msg: "Connected to " + target.host });
+    const root = (target.remoteDir || "/public_html").replace(/\/+$/, "") || "/";
+    const base = root === "/" ? "" : root;
+    const entries = Object.entries(files);
+    let bytes = 0;
+    for (const [p, content] of entries) {
+      const clean = String(p).replace(/^\/+/, "");
+      if (clean.split("/").indexOf("..") >= 0) throw new Error("Illegal path: " + p);
+      const parts = clean.split("/");
+      const name = parts.pop();
+      await client.ensureDir(base + (parts.length ? "/" + parts.join("/") : "") || "/");
+      const buf = Buffer.from(String(content), "utf8");
+      await client.uploadFrom(Readable.from([buf]), name);
+      bytes += buf.length;
+      w({ type: "upload", msg: clean + " (" + buf.length + " B)" });
+    }
+    const bad = [];
+    for (const [p, content] of entries) {
+      const clean = String(p).replace(/^\/+/, "");
+      try {
+        const size = await client.size(base + "/" + clean);
+        if (size !== Buffer.byteLength(String(content), "utf8")) bad.push(clean + " (size mismatch: " + size + ")");
+      } catch (e) { bad.push(clean + " (missing on server)"); }
+    }
+    if (bad.length) throw new Error("Verification failed: " + bad.join(", "));
+    w({ type: "info", msg: "Verified " + entries.length + " files (" + bytes + " B) on the server" });
+    const db = target.db;
+    if (db && db.name) {
+      try {
+        const mysql = require("mysql2/promise");
+        const conn = await mysql.createConnection({ host: db.host || "localhost", user: db.user, password: db.pass });
+        await conn.query("CREATE DATABASE IF NOT EXISTS ??", [db.name]);
+        await conn.end();
+        w({ type: "info", msg: "Database " + db.name + " is ready" });
+      } catch (e) { w({ type: "info", msg: "Database step skipped: " + e.message }); }
+    }
+    let url = null;
+    if (target.domain) {
+      const i = root.indexOf("public_html");
+      const sub = i >= 0 ? root.slice(i + "public_html".length) : "";
+      url = target.domain.replace(/\/$/, "") + sub + "/";
+    }
+    w({ type: "done", ok: true, url: url });
+  } catch (e) {
+    w({ type: "done", ok: false, msg: String(e.message || e) });
+  } finally { client.close(); res.end(); }
+});
+
+// Forwards AI requests (avoids browser CORS limits). Only these hosts are allowed:
+const ALLOWED = ["open.bigmodel.cn", "api.z.ai", "generativelanguage.googleapis.com"]
+  .concat((process.env.XENOM_ALLOW || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean));
+app.post("/api/proxy", async function (req, res) {
+  const b = req.body || {};
+  let u;
+  try { u = new URL(b.url); } catch (e) { return res.status(400).json({ error: { message: "Bad URL" } }); }
+  if (u.protocol !== "https:" || ALLOWED.indexOf(u.hostname) < 0)
+    return res.status(403).json({ error: { message: "Host not allowed: " + u.hostname + " (set XENOM_ALLOW to add one)" } });
+  const ctrl = new AbortController();
+  res.on("close", function () { ctrl.abort(); });
+  try {
+    const r = await fetch(b.url, {
+      method: "POST",
+      headers: Object.assign({ "Content-Type": "application/json" }, b.headers || {}),
+      body: JSON.stringify(b.body),
+      signal: ctrl.signal
+    });
+    res.status(r.status);
+    res.setHeader("Content-Type", r.headers.get("content-type") || "application/json");
+    if (!r.body) { res.end(await r.text()); return; }
+    const reader = r.body.getReader();
+    for (;;) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      res.write(Buffer.from(chunk.value));
+    }
+    res.end();
+  } catch (e) {
+    if (!res.headersSent) res.status(502).json({ error: { message: String(e.message || e) } });
+    else res.end();
+  }
+});
+
+app.listen(8787, "127.0.0.1", function () { console.log("Xenom backend bridge on http://localhost:8787"); });
+`;
+function showBackendSetup(){
+  modal('Backend bridge',
+    '<p style="margin-bottom:12px">Browsers cannot open FTP connections or call some AI APIs directly. This small Node service runs on your computer and handles FTP deploys and (optionally) AI requests.</p>'
+    +'<pre class="codegen" style="max-height:none;white-space:pre-wrap">npm init -y\nnpm install express basic-ftp\nnode xenom-backend.js</pre>'
+    +'<p style="margin:12px 0">Then set <b>http://localhost:8787</b> as the Backend URL in Settings. Full source:</p>'
+    +'<pre class="codegen">'+esc(BACKEND_SRC)+'</pre>',
+    [{label:'Copy source',action:()=>{copyText(BACKEND_SRC).then(()=>toast('Source copied')).catch(()=>toast('Copy failed'));return false}},
+     {label:'Download file',primary:true,action:()=>{dl(new Blob([BACKEND_SRC],{type:'text/javascript'}),'xenom-backend.js');toast('Downloaded — run it with Node 18+')}}]);
+}
+
+/* =====================================================================
+   SETTINGS
+   ===================================================================== */
+async function testProvider(p){
+  const st=$('#st_'+p),pv=prefs.providers[p];
+  if(!pv.key){st.textContent='Paste your API key first.';return}
+  const m=prefs.models.find(x=>x.provider===p&&x.k===prefs.current&&x.id)||prefs.models.find(x=>x.provider===p&&x.id);
+  if(!m){st.textContent='Add a model for this provider first.';return}
+  st.textContent='Connecting to '+m.id+'…';
+  const t0=Date.now();let out='';
+  const ac=new AbortController();const to=setTimeout(()=>ac.abort(),40000);
+  try{
+    await callModel(m,'You are a connectivity test.',[{role:'user',text:'Reply with the single word: OK',imgs:[]}],ac.signal,(k,t)=>{if(k==='text')out+=t});
+    st.textContent='Connected — '+m.id+' replied "'+out.trim().slice(0,30)+'" in '+(Date.now()-t0)+' ms';
+  }catch(e){
+    st.textContent='Failed — '+(ac.signal.aborted?'timed out after 40 s':friendlyError(e,m));
+  }
+  clearTimeout(to);
+}
+function openSettings(){
+  openDrawer('Settings');
+  const G=prefs.providers.glm,M=prefs.providers.gemini;
+  const keyField=(id,eye,val,ph)=>'<div class="pw-wrap"><input id="'+id+'" type="password" value="'+esc(val)+'" placeholder="'+ph+'" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="iconbtn" id="'+eye+'" aria-label="Show key">'+I('eye',16)+'</button></div>';
+  $('#drawerBody').innerHTML=`
+    <div class="form-sec"><span class="sec-t">Appearance</span>
+      <div class="togglerow"><div><b style="font-size:14px">Theme</b></div>
+        <div class="seg"><button id="thDark" class="${prefs.theme==='dark'?'on':''}">Dark</button><button id="thLight" class="${prefs.theme==='light'?'on':''}">Light</button></div></div>
+    </div>
+    <div class="form-sec"><span class="sec-t">GLM (Z.ai / Zhipu)</span>
+      <div class="field"><label class="mlabel">API key</label>${keyField('glmKey','glmEye',G.key,'Paste your GLM API key')}</div>
+      <div class="field"><label class="mlabel">Endpoint</label><input id="glmEp" value="${esc(G.endpoint)}" autocapitalize="off" spellcheck="false">
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="chip" id="glmP1">open.bigmodel.cn (China)</button><button class="chip" id="glmP2">api.z.ai (international)</button></div></div>
+      <button class="btn" id="glmTest" style="width:100%">${I('server',15)}Test GLM</button>
+      <div class="statusline" id="st_glm"></div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Gemini (Google)</span>
+      <div class="field"><label class="mlabel">API key</label>${keyField('gemKey','gemEye',M.key,'Paste your Gemini API key')}
+        <div class="hint">Get one free at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" style="text-decoration:underline">aistudio.google.com/apikey</a></div></div>
+      <div class="field"><label class="mlabel">Endpoint</label><input id="gemEp" value="${esc(M.endpoint)}" autocapitalize="off" spellcheck="false"></div>
+      <button class="btn" id="gemTest" style="width:100%">${I('server',15)}Test Gemini</button>
+      <div class="statusline" id="st_gemini"></div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Models</span>
+      <div id="modelList"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn" id="addGlm" style="flex:1">${I('plus',14)}GLM model</button>
+        <button class="btn" id="addGem" style="flex:1">${I('plus',14)}Gemini model</button>
+      </div>
+      <div class="hint">Tap the check to make a model active. The eye marks vision support (needed for image attachments). Model IDs change over time — copy the exact ID from your provider's docs.</div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Agent</span>
+      <div class="grid2">
+        <div class="field"><label class="mlabel">Temperature · <span id="tempV">${prefs.temperature}</span></label><input type="range" id="setTemp" min="0" max="1" step="0.1" value="${prefs.temperature}" style="padding:0"></div>
+        <div class="field"><label class="mlabel">Max steps per task</label><input type="number" id="setSteps" min="1" max="20" value="${prefs.maxSteps}" inputmode="numeric"></div>
+      </div>
+      <div class="field" style="margin-bottom:0"><label class="mlabel">Max output tokens</label><input type="number" id="setTok" min="1024" max="65536" step="1024" value="${prefs.maxTokens}" inputmode="numeric"><div class="hint">Lower this if your model returns an error about max_tokens.</div></div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Backend bridge</span>
+      <div class="field"><label class="mlabel">Backend URL</label><input id="setBe" value="${esc(prefs.backendUrl)}" placeholder="http://localhost:8787" autocapitalize="off" spellcheck="false"></div>
+      <div class="togglerow"><div><b style="font-size:14px">Route AI requests through the backend</b><div class="hint" style="margin-top:2px">Use this if the browser blocks a provider (CORS)</div></div><button class="togg ${prefs.viaBackend?'on':''}" id="togVia" aria-label="Toggle"></button></div>
+      <button class="btn" id="bePing" style="width:100%">${I('refresh',14)}Ping backend</button>
+      <div class="statusline" id="beStatus">${prefs.backendUrl?'URL saved — not checked yet':'Not set. Needed for FTP deploys.'}</div>
+      <button class="btn" id="beSetup" style="width:100%">${I('download',14)}Get xenom-backend.js</button>
+    </div>
+    <div class="form-sec"><span class="sec-t">Terminal</span>
+      <div class="togglerow"><div><b style="font-size:14px">Sandbox commands</b><div class="hint" style="margin-top:2px">ls, cat, node… on your project files</div></div><button class="togg ${prefs.terminal.localSandbox?'on':''}" id="togTerm" aria-label="Toggle"></button></div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Deploy defaults</span>
+      <div class="grid2"><div class="field"><label class="mlabel">Host</label><input id="dHost" value="${esc(prefs.deployDefaults.host)}" autocapitalize="off"></div><div class="field"><label class="mlabel">Port</label><input id="dPort" value="${esc(prefs.deployDefaults.port)}"></div></div>
+      <div class="grid2"><div class="field"><label class="mlabel">FTP username</label><input id="dUser" value="${esc(prefs.deployDefaults.username)}" autocomplete="off" autocapitalize="off"></div><div class="field"><label class="mlabel">FTP password</label><input id="dPass" type="password" value="${esc(prefs.deployDefaults.password)}" autocomplete="off"></div></div>
+      <div class="grid2"><div class="field"><label class="mlabel">Remote root</label><input id="dRoot" value="${esc(prefs.deployDefaults.remoteRoot)}" autocapitalize="off"></div><div class="field"><label class="mlabel">Domain</label><input id="dDomain" value="${esc(prefs.deployDefaults.domain)}" autocapitalize="off"></div></div>
+      <div class="hint">Used for new projects. Each project can override these in its Deploy panel.</div>
+    </div>
+    <div class="form-sec"><span class="sec-t">Data</span>
+      <div class="statusline">${I('db',13)}Browser storage used: ${fmtBytes(JSON.stringify(localStorage).length)}</div>
+      <div class="hint" style="margin:0 0 10px">API keys and FTP passwords are stored in this browser only. Do not use shared computers.</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn" id="expAll" style="flex:1">${I('download',14)}Export all</button>
+        <button class="btn" id="wipeAll" style="flex:1">${I('trash',14)}Erase everything</button>
+      </div>
+    </div>`;
+  const afterKey=()=>{renderSysline();if(cur)updateModelChip()};
+  $('#thDark').onclick=()=>{prefs.theme='dark';savePrefs();applyTheme();openSettings()};
+  $('#thLight').onclick=()=>{prefs.theme='light';savePrefs();applyTheme();openSettings()};
+  const eye=(inpId,btnId)=>{$('#'+btnId).onclick=()=>{const i=$('#'+inpId);i.type=i.type==='password'?'text':'password';$('#'+btnId).innerHTML=I(i.type==='password'?'eye':'eyeOff',16)}};
+  eye('glmKey','glmEye');eye('gemKey','gemEye');
+  $('#glmKey').oninput=e=>{prefs.providers.glm.key=e.target.value.trim();savePrefs();afterKey()};
+  $('#gemKey').oninput=e=>{prefs.providers.gemini.key=e.target.value.trim();savePrefs();afterKey()};
+  $('#glmEp').oninput=e=>{prefs.providers.glm.endpoint=e.target.value.trim();savePrefs()};
+  $('#gemEp').oninput=e=>{prefs.providers.gemini.endpoint=e.target.value.trim();savePrefs()};
+  $('#glmP1').onclick=()=>{$('#glmEp').value='https://open.bigmodel.cn/api/paas/v4/chat/completions';prefs.providers.glm.endpoint=$('#glmEp').value;savePrefs()};
+  $('#glmP2').onclick=()=>{$('#glmEp').value='https://api.z.ai/api/paas/v4/chat/completions';prefs.providers.glm.endpoint=$('#glmEp').value;savePrefs()};
+  $('#glmTest').onclick=()=>testProvider('glm');
+  $('#gemTest').onclick=()=>testProvider('gemini');
+  $('#addGlm').onclick=()=>{prefs.models.push({k:uid(),provider:'glm',id:'',vision:false});savePrefs();renderModelList(true)};
+  $('#addGem').onclick=()=>{prefs.models.push({k:uid(),provider:'gemini',id:'',vision:true});savePrefs();renderModelList(true)};
+  $('#setTemp').oninput=e=>{prefs.temperature=+e.target.value;$('#tempV').textContent=e.target.value;savePrefs()};
+  $('#setSteps').oninput=e=>{prefs.maxSteps=Math.max(1,Math.min(20,+e.target.value||10));savePrefs()};
+  $('#setTok').oninput=e=>{prefs.maxTokens=Math.max(1024,+e.target.value||16384);savePrefs()};
+  $('#setBe').oninput=e=>{prefs.backendUrl=e.target.value.trim();savePrefs();renderSysline()};
+  $('#togVia').onclick=e=>{
+    if(!prefs.viaBackend&&!prefs.backendUrl){toast('Set the backend URL first');return}
+    prefs.viaBackend=!prefs.viaBackend;savePrefs();e.currentTarget.classList.toggle('on',prefs.viaBackend);
+  };
+  $('#togTerm').onclick=e=>{prefs.terminal.localSandbox=!prefs.terminal.localSandbox;savePrefs();e.currentTarget.classList.toggle('on',prefs.terminal.localSandbox)};
+  $('#beSetup').onclick=showBackendSetup;
+  $('#bePing').onclick=async()=>{
+    const st=$('#beStatus');
+    if(!prefs.backendUrl){st.textContent='Set a URL first.';return}
+    st.textContent='Pinging…';
+    try{
+      const r=await fetch(prefs.backendUrl.replace(/\/$/,'')+'/api/health');
+      const j=await r.json();
+      st.textContent=j.ok?'Backend online — '+j.service:'Unexpected response';
+    }catch(e){st.textContent='Unreachable — '+e.message}
+  };
+  ['dHost','dPort','dUser','dPass','dRoot','dDomain'].forEach(id=>{
+    $('#'+id).oninput=()=>{
+      prefs.deployDefaults=Object.assign(prefs.deployDefaults,{host:$('#dHost').value.trim(),port:$('#dPort').value.trim(),username:$('#dUser').value.trim(),password:$('#dPass').value,remoteRoot:$('#dRoot').value.trim()||'/public_html',domain:$('#dDomain').value.trim()});
+      savePrefs();
+    };
+  });
+  $('#expAll').onclick=()=>{
+    const dump={exportedAt:new Date().toISOString(),projects:projects,prefs:JSON.parse(JSON.stringify(prefs))};
+    dump.prefs.providers.glm.key='';dump.prefs.providers.gemini.key='';dump.prefs.deployDefaults.password='';
+    projects.forEach(p=>{dump['files_'+p.id]=pFiles(p.id)});
+    dl(new Blob([JSON.stringify(dump,null,2)],{type:'application/json'}),'xenom-export.json');
+    toast('Exported (keys and passwords excluded)');
+  };
+  $('#wipeAll').onclick=()=>{
+    confirmDlg('Erase everything','All projects, files, chats, API keys and settings will be permanently deleted from this browser.','Erase all',()=>{
+      const keys=[];
+      for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('xenom:')===0)keys.push(k)}
+      keys.forEach(k=>localStorage.removeItem(k));
+      location.reload();
+    });
+  };
+  renderModelList();
+}
+function renderModelList(focusLast){
+  const box=$('#modelList');if(!box)return;
+  box.innerHTML='';
+  prefs.models.forEach((m,i)=>{
+    const row=document.createElement('div');row.className='model-row';
+    row.innerHTML='<button class="iconbtn" style="width:30px;height:30px" data-v="'+i+'" title="Vision capable" aria-label="Toggle vision">'+I(m.vision?'eye':'eyeOff',15)+'</button>'
+      +'<span class="chip">'+providerLabel(m.provider)+'</span>'
+      +'<div class="mid"><input value="'+esc(m.id)+'" data-id="'+i+'" placeholder="model id" aria-label="Model id" autocapitalize="off" spellcheck="false"></div>'
+      +(prefs.current===m.k?'<span class="chip" style="color:var(--ok);border-color:var(--ok)">active</span>':'<button class="iconbtn" style="width:30px;height:30px" data-use="'+i+'" title="Make active" aria-label="Make active">'+I('check',15)+'</button>')
+      +'<button class="iconbtn" style="width:30px;height:30px" data-del="'+i+'" title="Remove" aria-label="Remove">'+I('trash',15)+'</button>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input[data-id]').forEach(inp=>{inp.oninput=()=>{prefs.models[+inp.dataset.id].id=inp.value.trim();savePrefs();if(cur)updateModelChip()}});
+  box.querySelectorAll('[data-v]').forEach(b=>{b.onclick=()=>{const m=prefs.models[+b.dataset.v];m.vision=!m.vision;savePrefs();renderModelList()}});
+  box.querySelectorAll('[data-use]').forEach(b=>{b.onclick=()=>{const m=prefs.models[+b.dataset.use];if(!m.id){toast('Enter a model ID first');return}prefs.current=m.k;savePrefs();if(cur)updateModelChip();renderModelList()}});
+  box.querySelectorAll('[data-del]').forEach(b=>{
+    b.onclick=()=>{
+      if(prefs.models.length<=1){toast('Keep at least one model');return}
+      const rem=prefs.models.splice(+b.dataset.del,1)[0];
+      if(prefs.current===rem.k)prefs.current=prefs.models[0].k;
+      savePrefs();if(cur)updateModelChip();renderModelList();
+    };
+  });
+  if(focusLast){const ins=box.querySelectorAll('input[data-id]');if(ins.length){const l=ins[ins.length-1];l.focus()}}
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+$('#workTitle').textContent='—';
+applyTheme();
+renderDashboard();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if($('#modal').classList.contains('on')){closeModal();return}
+    closeSheet();closeDrawer();
+  }
+});
+window.addEventListener('beforeunload',()=>{try{flushEditor();if(cur)saveChatState()}catch(e){}});
+console.log('XENOM ready');
+</script>
+</body>
+</html>
